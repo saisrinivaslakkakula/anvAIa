@@ -1,0 +1,410 @@
+{
+  "users": [
+    {
+      "id": "usr_001",
+      "name": "Sai Srinivas L",
+      "email": "saisrinivas.lakka@gmail.com"
+    }
+  ],
+  "jobs": [
+    {
+      "id": 1,
+      "internal_id": "2025-08-20-airbnb-se-platform-a1b2c",
+      "title": "Software Engineer, Platform",
+      "company": "Airbnb",
+      "location": "San Francisco, CA",
+      "description": "Build distributed systems powering developer platform.",
+      "external_link": "https://careers.airbnb.com/jobs/12345",
+      "source": "Company Site",
+      "scraped_at": "2025-08-20T08:00:00-07:00"
+    },
+    {
+      "id": 2,
+      "internal_id": "2025-08-20-doordash-be-payments-b4c5d",
+      "title": "Backend Engineer, Payments",
+      "company": "DoorDash",
+      "location": "San Francisco, CA",
+      "description": "Design payment services; improve reliability and latency.",
+      "external_link": "https://careers.doordash.com/jobs/67890",
+      "source": "Company Site",
+      "scraped_at": "2025-08-20T08:10:00-07:00"
+    },
+    {
+      "id": 3,
+      "internal_id": "test-imp-1",
+      "title": "Platform Engineer (Mock)",
+      "company": "TestCo",
+      "location": "San Francisco, CA",
+      "description": "mock import",
+      "external_link": "https://example.com/jobs/mock-1",
+      "source": "Company Site",
+      "scraped_at": "2025-08-26T06:02:00.967Z"
+    },
+    {
+      "id": 4,
+      "internal_id": "test-imp-2",
+      "title": "Backend Engineer (Mock)",
+      "company": "TestCo",
+      "location": "San Francisco, CA",
+      "description": "mock import",
+      "external_link": "https://example.com/jobs/mock-2",
+      "source": "Company Site",
+      "scraped_at": "2025-08-26T06:02:00.967Z"
+    },
+    {
+      "id": 5,
+      "internal_id": "2025-08-26-databricks-backend-engineer-awzNN",
+      "title": "Backend Engineer",
+      "company": "Databricks",
+      "location": "San Francisco, CA",
+      "description": "Mock Backend Engineer at Databricks.",
+      "external_link": "https://jobs.databricks.com/85NxOd",
+      "source": "Company Site",
+      "scraped_at": "2025-08-26T06:02:01.135Z"
+    },
+    {
+      "id": 6,
+      "internal_id": "2025-08-26-airbnb-backend-engineer-goYeD",
+      "title": "Backend Engineer",
+      "company": "Airbnb",
+      "location": "San Francisco, CA",
+      "description": "Mock Backend Engineer at Airbnb.",
+      "external_link": "https://jobs.airbnb.com/tZqOyA",
+      "source": "Company Site",
+      "scraped_at": "2025-08-26T06:02:01.135Z"
+    },
+    {
+      "id": 7,
+      "internal_id": "2025-08-26-airbnb-backend-engineer-Z2Hb2",
+      "title": "Backend Engineer",
+      "company": "Airbnb",
+      "location": "San Francisco, CA",
+      "description": "Mock Backend Engineer at Airbnb.",
+      "external_link": "https://jobs.airbnb.com/9L9xwp",
+      "source": "Company Site",
+      "scraped_at": "2025-08-26T06:02:01.135Z"
+    },
+    {
+      "id": 8,
+      "internal_id": "2025-08-26-stripe-platform-engineer-H4Rmd",
+      "title": "Platform Engineer",
+      "company": "Stripe",
+      "location": "San Francisco, CA",
+      "description": "Mock Platform Engineer at Stripe.",
+      "external_link": "https://jobs.stripe.com/uW1VeS",
+      "source": "Company Site",
+      "scraped_at": "2025-08-26T06:02:01.135Z"
+    },
+    {
+      "id": 9,
+      "internal_id": "2025-08-26-openai-backend-engineer-85Cvg",
+      "title": "Backend Engineer",
+      "company": "OpenAI",
+      "location": "San Francisco, CA",
+      "description": "Mock Backend Engineer at OpenAI.",
+      "external_link": "https://jobs.openai.com/VfrFqu",
+      "source": "Company Site",
+      "scraped_at": "2025-08-26T06:02:01.145Z"
+    },
+    {
+      "id": 10,
+      "internal_id": "2025-08-26-databricks-backend-engineer-ZDotd",
+      "title": "Backend Engineer",
+      "company": "Databricks",
+      "location": "San Francisco, CA",
+      "description": "Mock Backend Engineer at Databricks.",
+      "external_link": "https://jobs.databricks.com/C3kM6Q",
+      "source": "Company Site",
+      "scraped_at": "2025-08-26T06:02:01.145Z"
+    },
+    {
+      "id": 11,
+      "internal_id": "2025-08-26-airbnb-software-engineer-dl14q",
+      "title": "Software Engineer",
+      "company": "Airbnb",
+      "location": "San Francisco, CA",
+      "description": "Mock Software Engineer at Airbnb.",
+      "external_link": "https://jobs.airbnb.com/q0OuIm",
+      "source": "Company Site",
+      "scraped_at": "2025-08-26T06:02:01.145Z"
+    },
+    {
+      "id": 12,
+      "internal_id": "2025-08-26-databricks-software-engineer-TNmUp",
+      "title": "Software Engineer",
+      "company": "Databricks",
+      "location": "San Francisco, CA",
+      "description": "Mock Software Engineer at Databricks.",
+      "external_link": "https://jobs.databricks.com/SSPL8T",
+      "source": "Company Site",
+      "scraped_at": "2025-08-26T06:02:01.145Z"
+    },
+    {
+      "id": 13,
+      "internal_id": "2025-08-26-stripe-platform-engineer-xOHAF",
+      "title": "Platform Engineer",
+      "company": "Stripe",
+      "location": "San Francisco, CA",
+      "description": "Mock Platform Engineer at Stripe.",
+      "external_link": "https://jobs.stripe.com/I1HQTm",
+      "source": "Company Site",
+      "scraped_at": "2025-08-26T06:29:36.023Z"
+    },
+    {
+      "id": 14,
+      "internal_id": "2025-08-26-stripe-software-engineer-i5Raw",
+      "title": "Software Engineer",
+      "company": "Stripe",
+      "location": "San Francisco, CA",
+      "description": "Mock Software Engineer at Stripe.",
+      "external_link": "https://jobs.stripe.com/3kWxFj",
+      "source": "Company Site",
+      "scraped_at": "2025-08-26T06:29:36.023Z"
+    },
+    {
+      "id": 15,
+      "internal_id": "2025-08-26-airbnb-backend-engineer-Z-jJe",
+      "title": "Backend Engineer",
+      "company": "Airbnb",
+      "location": "San Francisco, CA",
+      "description": "Mock Backend Engineer at Airbnb.",
+      "external_link": "https://jobs.airbnb.com/Q7QAcm",
+      "source": "Company Site",
+      "scraped_at": "2025-08-26T06:29:36.023Z"
+    },
+    {
+      "id": 16,
+      "internal_id": "2025-08-26-pinterest-backend-engineer-phRVb",
+      "title": "Backend Engineer",
+      "company": "Pinterest",
+      "location": "San Francisco, CA",
+      "description": "Mock Backend Engineer at Pinterest.",
+      "external_link": "https://jobs.pinterest.com/zGm1Ci",
+      "source": "Company Site",
+      "scraped_at": "2025-08-26T06:29:36.023Z"
+    },
+    {
+      "id": 17,
+      "internal_id": "2025-08-26-airbnb-software-engineer-Y7G8a",
+      "title": "Software Engineer",
+      "company": "Airbnb",
+      "location": "San Francisco, CA",
+      "description": "Mock Software Engineer at Airbnb.",
+      "external_link": "https://jobs.airbnb.com/h-3LWQ",
+      "source": "Company Site",
+      "scraped_at": "2025-08-26T06:29:36.023Z"
+    },
+    {
+      "id": 18,
+      "internal_id": "2025-08-26-databricks-platform-engineer-L27gH",
+      "title": "Platform Engineer",
+      "company": "Databricks",
+      "location": "San Francisco, CA",
+      "description": "Mock Platform Engineer at Databricks.",
+      "external_link": "https://jobs.databricks.com/2yqxnJ",
+      "source": "Company Site",
+      "scraped_at": "2025-08-26T06:29:36.023Z"
+    },
+    {
+      "id": 19,
+      "internal_id": "2025-08-26-databricks-platform-engineer-77sQm",
+      "title": "Platform Engineer",
+      "company": "Databricks",
+      "location": "San Francisco, CA",
+      "description": "Mock Platform Engineer at Databricks.",
+      "external_link": "https://jobs.databricks.com/h1iH4X",
+      "source": "Company Site",
+      "scraped_at": "2025-08-26T06:29:36.033Z"
+    },
+    {
+      "id": 20,
+      "internal_id": "2025-08-26-databricks-platform-engineer-B3P9D",
+      "title": "Platform Engineer",
+      "company": "Databricks",
+      "location": "San Francisco, CA",
+      "description": "Mock Platform Engineer at Databricks.",
+      "external_link": "https://jobs.databricks.com/sY5zWK",
+      "source": "Company Site",
+      "scraped_at": "2025-08-26T06:29:36.033Z"
+    },
+    {
+      "id": 21,
+      "internal_id": "2025-08-26-stripe-backend-engineer-bUEec",
+      "title": "Backend Engineer",
+      "company": "Stripe",
+      "location": "San Francisco, CA",
+      "description": "Mock Backend Engineer at Stripe.",
+      "external_link": "https://jobs.stripe.com/PgLuIT",
+      "source": "Company Site",
+      "scraped_at": "2025-08-26T06:29:36.033Z"
+    },
+    {
+      "id": 22,
+      "internal_id": "2025-08-26-databricks-software-engineer-Z8KkX",
+      "title": "Software Engineer",
+      "company": "Databricks",
+      "location": "San Francisco, CA",
+      "description": "Mock Software Engineer at Databricks.",
+      "external_link": "https://jobs.databricks.com/U2Itit",
+      "source": "Company Site",
+      "scraped_at": "2025-08-26T06:29:36.033Z"
+    },
+    {
+      "id": 23,
+      "internal_id": "2025-08-26-pinterest-backend-engineer-0gFHL",
+      "title": "Backend Engineer",
+      "company": "Pinterest",
+      "location": "San Francisco, CA",
+      "description": "Mock Backend Engineer at Pinterest.",
+      "external_link": "https://jobs.pinterest.com/5R-bot",
+      "source": "Company Site",
+      "scraped_at": "2025-08-26T06:29:36.033Z"
+    }
+  ],
+  "applications": [
+    {
+      "id": 101,
+      "job_id": 1,
+      "user_id": "usr_001",
+      "status": "APPLIED",
+      "notes": "Submitted successfully (mock).",
+      "created_at": "2025-08-20T10:00:00-07:00",
+      "updated_at": "2025-08-26T06:29:35.935Z"
+    },
+    {
+      "id": 102,
+      "job_id": 2,
+      "user_id": "usr_001",
+      "status": "FAILED",
+      "notes": "Portal error (mock).",
+      "created_at": "2025-08-20T10:10:00-07:00",
+      "updated_at": "2025-08-26T06:02:01.050Z"
+    }
+  ],
+  "questions": [
+    {
+      "id": 201,
+      "job_id": 1,
+      "user_id": "usr_001",
+      "field_label": "Are you legally authorized to work in the United States?",
+      "help_text": "Select Yes/No",
+      "kb_key": "work_auth",
+      "status": "ANSWERED",
+      "created_at": "2025-08-20T10:02:00-07:00",
+      "updated_at": "2025-08-26T06:02:01.117Z",
+      "answer": "yes-1756188121"
+    },
+    {
+      "id": 202,
+      "job_id": 1,
+      "user_id": "usr_001",
+      "field_label": "Will you now or in the future require sponsorship?",
+      "help_text": "H-1B, O-1, etc.",
+      "kb_key": "sponsorship_needed",
+      "status": "ANSWERED",
+      "created_at": "2025-08-20T10:03:00-07:00",
+      "updated_at": "2025-08-26T06:14:30.992Z",
+      "answer": "yes-1756188870"
+    }
+  ],
+  "runs": [
+    {
+      "id": 314,
+      "agent": "researcher",
+      "started_at": "2025-08-26T06:29:36.033Z",
+      "finished_at": "2025-08-26T06:29:36.033Z",
+      "summary": "Found 5 jobs; 5 unique after dedupe"
+    },
+    {
+      "id": 313,
+      "agent": "researcher",
+      "started_at": "2025-08-26T06:29:36.023Z",
+      "finished_at": "2025-08-26T06:29:36.023Z",
+      "summary": "Found 6 jobs; 6 unique after dedupe"
+    },
+    {
+      "id": 312,
+      "agent": "applier",
+      "started_at": "2025-08-26T06:29:35.945Z",
+      "finished_at": "2025-08-26T06:29:35.945Z",
+      "summary": "Batch processed 0 applications"
+    },
+    {
+      "id": 311,
+      "agent": "applier",
+      "started_at": "2025-08-26T06:29:35.935Z",
+      "finished_at": "2025-08-26T06:29:35.935Z",
+      "summary": "Batch processed 1 applications"
+    },
+    {
+      "id": 310,
+      "agent": "applier",
+      "started_at": "2025-08-26T06:14:30.933Z",
+      "finished_at": "2025-08-26T06:14:30.933Z",
+      "summary": "Batch processed 0 applications"
+    },
+    {
+      "id": 309,
+      "agent": "applier",
+      "started_at": "2025-08-26T06:14:30.923Z",
+      "finished_at": "2025-08-26T06:14:30.923Z",
+      "summary": "Batch processed 1 applications"
+    },
+    {
+      "id": 308,
+      "agent": "applier",
+      "started_at": "2025-08-26T06:11:05.627Z",
+      "finished_at": "2025-08-26T06:11:05.627Z",
+      "summary": "Batch processed 1 applications"
+    },
+    {
+      "id": 307,
+      "agent": "applier",
+      "started_at": "2025-08-26T06:11:05.617Z",
+      "finished_at": "2025-08-26T06:11:05.617Z",
+      "summary": "Batch processed 1 applications"
+    },
+    {
+      "id": 306,
+      "agent": "researcher",
+      "started_at": "2025-08-26T06:02:01.145Z",
+      "finished_at": "2025-08-26T06:02:01.145Z",
+      "summary": "Found 4 jobs; 4 unique after dedupe"
+    },
+    {
+      "id": 305,
+      "agent": "researcher",
+      "started_at": "2025-08-26T06:02:01.135Z",
+      "finished_at": "2025-08-26T06:02:01.135Z",
+      "summary": "Found 4 jobs; 4 unique after dedupe"
+    },
+    {
+      "id": 304,
+      "agent": "applier",
+      "started_at": "2025-08-26T06:02:01.060Z",
+      "finished_at": "2025-08-26T06:02:01.060Z",
+      "summary": "Batch processed 0 applications"
+    },
+    {
+      "id": 303,
+      "agent": "applier",
+      "started_at": "2025-08-26T06:02:01.050Z",
+      "finished_at": "2025-08-26T06:02:01.050Z",
+      "summary": "Batch processed 2 applications"
+    },
+    {
+      "id": 301,
+      "agent": "researcher",
+      "started_at": "2025-08-20T08:00:00-07:00",
+      "finished_at": "2025-08-20T08:20:00-07:00",
+      "summary": "Found 12 jobs; 10 unique after dedupe"
+    },
+    {
+      "id": 302,
+      "agent": "applier",
+      "started_at": "2025-08-20T10:00:00-07:00",
+      "finished_at": "2025-08-20T10:25:00-07:00",
+      "summary": "Applied: 1, Partial: 1, Login Required: 1"
+    }
+  ]
+}
