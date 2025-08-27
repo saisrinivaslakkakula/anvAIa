@@ -1,23 +1,20 @@
 // src/pages/Questions.tsx
 import { useEffect, useState } from "react";
 import QuestionItem from "../components/QuestionItem";
-import { USE_API } from "../lib/datasource";
 import { api } from "../lib/api";
-import {
-    getOpenQuestions as mockGet,
-    answerQuestion as mockAnswer,
-} from "../lib/db";
 
 export default function Questions() {
     const [items, setItems] = useState<any[]>([]);
     const [toast, setToast] = useState("");
 
     const refresh = async () => {
-        if (USE_API) {
+        try {
             const rows = await api.questions("OPEN");
             setItems(rows);
-        } else {
-            setItems(mockGet());
+        } catch (error) {
+            console.error("Failed to fetch questions:", error);
+            setToast("Failed to fetch questions");
+            setTimeout(() => setToast(""), 3000);
         }
     };
 
@@ -26,14 +23,16 @@ export default function Questions() {
     }, []);
 
     const handleSave = async (id: number, ans: string) => {
-        if (USE_API) {
+        try {
             await api.answerQuestion(id, ans);
-        } else {
-            mockAnswer(id, ans);
+            setToast("Saved. Application moved to IN_PROGRESS.");
+            setTimeout(() => setToast(""), 1200);
+            void refresh();
+        } catch (error) {
+            console.error("Failed to save answer:", error);
+            setToast("Failed to save answer");
+            setTimeout(() => setToast(""), 3000);
         }
-        setToast("Saved. Application moved to IN_PROGRESS.");
-        setTimeout(() => setToast(""), 1200);
-        void refresh();
     };
 
     return (

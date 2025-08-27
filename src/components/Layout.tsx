@@ -1,6 +1,5 @@
 import { NavLink } from "react-router-dom";
 import React from "react";
-import { fakeResearcherRun, fakeApplierRun } from "../lib/db";
 
 const link =
     "flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium hover:bg-gray-800/60 transition";
@@ -59,7 +58,7 @@ export default function Layout({
 
                         <div className="mt-auto p-3 text-xs text-gray-400">
                             <div className="border-t border-gray-800 pt-3">
-                                v0.1 • local mock data
+                                v0.1 • API backend
                             </div>
                         </div>
                     </div>
@@ -104,25 +103,6 @@ export default function Layout({
                     </NavLink>
                 </div>
             </nav>
-
-            <button
-                className="btn"
-                onClick={() => {
-                    fakeResearcherRun();
-                    alert("Researcher run queued (mock)");
-                }}
-            >
-                Run Researcher
-            </button>
-            <button
-                className="btn btn-secondary"
-                onClick={() => {
-                    fakeApplierRun();
-                    alert("Applier run queued (mock)");
-                }}
-            >
-                Run Applier
-            </button>
         </div>
     );
 }

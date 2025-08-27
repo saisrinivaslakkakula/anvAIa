@@ -1,15 +1,73 @@
-import { useMemo, useState } from "react";
-import { ALL_STATUSES, getJoinedApplications } from "../lib/db";
+import { useEffect, useMemo, useState } from "react";
+import { api } from "../lib/api";
 import StatusPill from "./StatusPill";
+
+const ALL_STATUSES = [
+    "ALL",
+    "APPLIED",
+    "IN_PROGRESS",
+    "PARTIAL_FILLED",
+    "LOGIN_REQUIRED",
+    "FAILED",
+    "SKIPPED",
+] as const;
 
 export default function ApplicationsTable() {
     const [status, setStatus] = useState<(typeof ALL_STATUSES)[number]>("ALL");
     const [search, setSearch] = useState("");
+    const [applications, setApplications] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
 
-    const rows = useMemo(
-        () => getJoinedApplications({ status, search }),
-        [status, search]
-    );
+    useEffect(() => {
+        const fetchApplications = async () => {
+            try {
+                setLoading(true);
+                const apps = await api.applications();
+                setApplications(apps);
+            } catch (error) {
+                console.error("Failed to fetch applications:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchApplications();
+    }, []);
+
+    const rows = useMemo(() => {
+        let filtered = applications;
+
+        if (status !== "ALL") {
+            filtered = filtered.filter((r) => r.status === status);
+        }
+
+        if (search.trim()) {
+            const q = search.toLowerCase();
+            filtered = filtered.filter(
+                (r) =>
+                    r.company?.toLowerCase().includes(q) ||
+                    r.title?.toLowerCase().includes(q) ||
+                    r.location?.toLowerCase().includes(q)
+            );
+        }
+
+        // newest updated first
+        return filtered.sort(
+            (a, b) =>
+                new Date(b.updated_at).getTime() -
+                new Date(a.updated_at).getTime()
+        );
+    }, [applications, status, search]);
+
+    if (loading) {
+        return (
+            <div className="card">
+                <div className="flex items-center justify-center h-32">
+                    <div className="text-gray-500">Loading applications...</div>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="card">
@@ -56,9 +114,9 @@ export default function ApplicationsTable() {
                     <tbody>
                         {rows.map((r) => (
                             <tr key={r.id} className="border-t">
-                                <td className="py-2 pr-4">{r.job.company}</td>
-                                <td className="py-2 pr-4">{r.job.title}</td>
-                                <td className="py-2 pr-4">{r.job.location}</td>
+                                <td className="py-2 pr-4">{r.company}</td>
+                                <td className="py-2 pr-4">{r.title}</td>
+                                <td className="py-2 pr-4">{r.location}</td>
                                 <td className="py-2 pr-4">
                                     <StatusPill status={r.status} />
                                 </td>
@@ -68,7 +126,7 @@ export default function ApplicationsTable() {
                                 <td className="py-2">
                                     <a
                                         className="text-indigo-600 hover:underline"
-                                        href={r.job.external_link}
+                                        href={r.external_link}
                                         target="_blank"
                                         rel="noreferrer"
                                     >
