@@ -1,21 +1,22 @@
 services:
-  - type: web
-    name: job-agents-api
-    env: node
-    plan: free
-    buildCommand: npm install && npm run build:all
-    startCommand: npm start
-    envVars:
-      - key: NODE_ENV
-        value: production
-      - key: DATABASE_URL
-        fromDatabase:
-          name: job-agents-db
-          property: connectionString
-    healthCheckPath: /api/health
+    - type: web
+      name: job-agents-api
+      env: node
+      plan: free
+      buildCommand: npm run build:render
+      startCommand: npm start
+      envVars:
+          - key: NODE_ENV
+            value: production
+          - key: DATABASE_URL
+            fromDatabase:
+                name: job-agents-db
+                property: connectionString
+      healthCheckPath: /api/health
+      autoDeploy: true
 
 databases:
-  - name: job-agents-db
-    databaseName: jobagents
-    user: jobagents_user
-    plan: free
+    - name: job-agents-db
+      databaseName: jobagents
+      user: jobagents_user
+      plan: free
