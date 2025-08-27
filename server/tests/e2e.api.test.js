@@ -7,6 +7,26 @@ import { assertSafeTestDb, truncateAll, insertUser } from './utils.ts';
 
 const app = buildApp();
 
+// 🚨 CRITICAL SAFETY CHECK - RUNS BEFORE ANY TESTS
+describe('SAFETY CHECK', () => {
+  test('should refuse to run against production database', () => {
+    // This test will fail if safety checks don't pass
+    expect(() => assertSafeTestDb()).not.toThrow();
+  });
+  
+  test('should have proper test environment', () => {
+    expect(process.env.NODE_ENV).toBe('test');
+    expect(process.env.E2E_ALLOW_RESET).toBe('true');
+    expect(process.env.DATABASE_URL).toContain('test');
+    
+    // Ensure we're not pointing to production
+    const dbUrl = process.env.DATABASE_URL || '';
+    expect(dbUrl).not.toContain('render.com');
+    expect(dbUrl).not.toContain('heroku.com');
+    expect(dbUrl).not.toContain('aws.amazon.com');
+  });
+});
+
 describe('Job Agents API — E2E', () => {
   beforeAll(async () => {
     assertSafeTestDb();
