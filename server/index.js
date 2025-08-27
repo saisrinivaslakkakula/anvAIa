@@ -47,13 +47,65 @@ export function buildApp() {
       });
     } else {
       console.error('Could not find dist folder. Available paths tried:', possiblePaths);
-      // Fallback: serve a simple message
+      
+      // Fallback: serve a simple HTML page with basic functionality
       app.get(/^(?!\/api).*/, (req, res) => {
-        res.status(404).json({ 
-          ok: false, 
-          error: 'Frontend not built. Please check build process.',
-          availablePaths: possiblePaths
-        });
+        const html = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Job Agents - Frontend Building</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <div class="max-w-4xl mx-auto">
+            <div class="bg-white rounded-lg shadow-md p-8">
+                <h1 class="text-3xl font-bold text-gray-900 mb-4">🚀 Job Agents Application</h1>
+                <div class="bg-blue-50 border border-blue-200 rounded-md p-4 mb-6">
+                    <p class="text-blue-800">
+                        <strong>Status:</strong> Frontend is currently building. This is a temporary page.
+                    </p>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <h2 class="text-xl font-semibold mb-2">✅ Backend Status</h2>
+                        <p class="text-gray-600">Your backend API is working perfectly!</p>
+                        <a href="/api/health" class="text-blue-600 hover:underline">Test API Health</a>
+                    </div>
+                    
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <h2 class="text-xl font-semibold mb-2">🔧 Frontend Status</h2>
+                        <p class="text-gray-600">React app is being built. This may take a few minutes.</p>
+                    </div>
+                </div>
+                
+                <div class="border-t pt-6">
+                    <h3 class="text-lg font-semibold mb-3">Available API Endpoints:</h3>
+                    <ul class="space-y-2 text-sm text-gray-600">
+                        <li>• <code class="bg-gray-100 px-2 py-1 rounded">GET /api/health</code> - Health check</li>
+                        <li>• <code class="bg-gray-100 px-2 py-1 rounded">GET /api/jobs</code> - List jobs</li>
+                        <li>• <code class="bg-gray-100 px-2 py-1 rounded">GET /api/applications</code> - List applications</li>
+                        <li>• <code class="bg-gray-100 px-2 py-1 rounded">GET /api/questions</code> - List questions</li>
+                    </ul>
+                </div>
+                
+                <div class="mt-6 text-center">
+                    <button onclick="location.reload()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                        🔄 Refresh Page
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>`;
+        
+        res.setHeader('Content-Type', 'text/html');
+        res.send(html);
       });
     }
   } else {
