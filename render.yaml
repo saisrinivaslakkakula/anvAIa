@@ -1,10 +1,14 @@
 services:
+    # Backend API Service
     - type: web
       name: job-agents-api
       env: node
       plan: free
-      buildCommand: npm run build:render:debug
-      startCommand: npm start
+      buildCommand: |
+          cd server
+          npm install
+          npm run build
+      startCommand: cd server && npm start
       envVars:
           - key: NODE_ENV
             value: production
@@ -12,7 +16,23 @@ services:
             fromDatabase:
                 name: job-agents-db
                 property: connectionString
+          - key: FRONTEND_URL
+            value: https://job-agents-frontend.onrender.com
       healthCheckPath: /api/health
+      autoDeploy: true
+
+    # Frontend Static Site
+    - type: web
+      name: job-agents-frontend
+      env: static
+      plan: free
+      buildCommand: |
+          npm install
+          npm run build
+      staticPublishPath: ./dist
+      envVars:
+          - key: VITE_API_BASE_URL
+            value: https://job-agents-api.onrender.com
       autoDeploy: true
 
 databases:

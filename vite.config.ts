@@ -7,10 +7,5 @@ export default defineConfig({
     outDir: 'dist',
     emptyOutDir: true,
     sourcemap: false
-  },
-  server: {
-    proxy: {
-      '/api': 'http://localhost:4000'
-    }
   }
 })

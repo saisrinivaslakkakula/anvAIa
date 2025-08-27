@@ -1,4 +1,4 @@
-const BASE = import.meta.env.VITE_API_BASE_URL || ''; // '' => use Vite proxy to /api
+const BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:4000'; // Use env var or fallback to localhost
 
 async function jfetch<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(`${BASE}/api${path}`, {
