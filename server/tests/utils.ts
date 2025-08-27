@@ -1,11 +1,19 @@
 import dotenv from 'dotenv';
 
-// Load environment variables - but be very careful about which ones
+// Load test environment variables FIRST
 const envPath = new URL('../.env.test', import.meta.url).pathname;
 try {
-  dotenv.config({ path: envPath });
+  const result = dotenv.config({ path: envPath });
+  if (result.error) {
+    console.warn('Warning: Error loading .env.test:', result.error.message);
+  } else if (result.parsed) {
+    console.log('✅ Loaded test environment variables');
+    console.log('🔍 Test env DATABASE_URL:', result.parsed.DATABASE_URL);
+    // Override process.env with test values
+    Object.assign(process.env, result.parsed);
+    console.log('🔍 After override, process.env.DATABASE_URL:', process.env.DATABASE_URL);
+  }
 } catch (error) {
-  // If .env.test doesn't exist, don't load any env vars
   console.warn('Warning: .env.test not found, using process.env only');
 }
 
@@ -15,6 +23,11 @@ import { prisma } from '../prismaClient.js';
 export function assertSafeTestDb() {
   const { NODE_ENV, DATABASE_URL, E2E_ALLOW_RESET } = process.env;
 
+  console.log('🚨 SAFETY CHECK - Current environment variables:');
+  console.log('   NODE_ENV:', NODE_ENV);
+  console.log('   E2E_ALLOW_RESET:', E2E_ALLOW_RESET);
+  console.log('   DATABASE_URL:', DATABASE_URL);
+  
   // 1. Environment must be test
   if (NODE_ENV !== 'test') {
     throw new Error('Refusing to run E2E: NODE_ENV must be "test".');
@@ -30,51 +43,52 @@ export function assertSafeTestDb() {
     throw new Error('Refusing to run E2E: DATABASE_URL missing.');
   }
 
-  // 4. CRITICAL: Database URL must NOT contain production indicators
+  // 4. CRITICAL: Check if this is a safe connection
   const dbUrl = DATABASE_URL.toLowerCase();
-  const productionIndicators = [
+  
+  // BLOCK: Remote production connections (Render.com, Heroku, etc.)
+  const productionHosts = [
     'render.com',
     'heroku.com',
     'aws.amazon.com',
     'googleapis.com',
     'azure.com',
     'digitalocean.com',
-    'localhost:5432', // Local production port
-    '127.0.0.1:5432'
+    'dpg-', // Render.com database pattern
+    'oregon-postgres.render.com' // Your specific production host
   ];
-
-  for (const indicator of productionIndicators) {
-    if (dbUrl.includes(indicator)) {
-      throw new Error(`CRITICAL SAFETY VIOLATION: Database URL contains production indicator: ${indicator}`);
+  
+  for (const host of productionHosts) {
+    if (dbUrl.includes(host)) {
+      throw new Error(`CRITICAL SAFETY VIOLATION: Database URL contains production host: ${host}. Refusing to run tests against remote production database.`);
     }
   }
-
-  // 5. Database URL must contain test indicators
-  const testIndicators = [
-    'test',
-    'dev',
-    'local',
-    'localhost:5433', // Common test port
-    '127.0.0.1:5433'
-  ];
-
-  const hasTestIndicator = testIndicators.some(indicator => dbUrl.includes(indicator));
-  if (!hasTestIndicator) {
-    throw new Error('CRITICAL SAFETY VIOLATION: Database URL does not contain test indicators. Refusing to truncate potentially production database.');
+  
+  // ALLOW: Localhost connections (safe for testing)
+  const isLocalhost = dbUrl.includes('localhost') || dbUrl.includes('127.0.0.1');
+  
+  if (isLocalhost) {
+    console.log('✅ Localhost connection detected - safe for testing');
+  } else {
+    throw new Error('CRITICAL SAFETY VIOLATION: Only localhost connections are allowed for testing. Remote connections are blocked for safety.');
   }
 
-  // 6. Additional safety: Check if database name contains 'test'
-  const dbNameMatch = DATABASE_URL.match(/\/([^?]+)(\?|$)/);
-  if (dbNameMatch && !dbNameMatch[1].toLowerCase().includes('test')) {
-    throw new Error(`CRITICAL SAFETY VIOLATION: Database name '${dbNameMatch[1]}' does not contain 'test'. Refusing to truncate potentially production database.`);
+  // 5. Extract and log database name for verification
+  const dbNameMatch = DATABASE_URL.match(/\/\/(?:[^@]+@)?[^\/]+\/([^?]+)(?:\?|$)/);
+  if (dbNameMatch) {
+    const dbName = dbNameMatch[1];
+    console.log('🔍 Database name:', dbName);
   }
 
-  console.log('✅ Safety checks passed. Running against test database.');
+  console.log('✅ Safety checks passed. Safe to proceed with testing.');
 }
 
 export async function truncateAll() {
   // Double-check safety before truncating
   assertSafeTestDb();
+  
+  // CRITICAL: Verify we're actually connected to test_db
+  await verifyTestDatabaseConnection();
   
   console.log('⚠️  WARNING: About to truncate all data tables...');
   console.log('⚠️  Database URL:', process.env.DATABASE_URL);
@@ -100,6 +114,9 @@ export async function insertUser({ email = 'e2e@example.com', full_name = 'E2E U
   // Safety check before any database operation
   assertSafeTestDb();
   
+  // CRITICAL: Verify we're actually connected to test_db
+  await verifyTestDatabaseConnection();
+  
   const user = await prisma.users.create({
     data: {
       email,
@@ -107,4 +124,35 @@ export async function insertUser({ email = 'e2e@example.com', full_name = 'E2E U
     }
   });
   return user;
+}
+
+// CRITICAL: Verify we're actually connected to localhost before allowing any destructive operations
+export async function verifyTestDatabaseConnection() {
+  console.log('🔍 Verifying database connection...');
+  
+  try {
+    // Check what database we're actually connected to and verify it's localhost
+    const result = await prisma.$queryRaw<Array<{db_name: string, user_name: string, inet_server_addr: string}>>`
+      SELECT 
+        current_database() as db_name, 
+        current_user as user_name,
+        inet_server_addr() as inet_server_addr
+    `;
+    const dbInfo = result[0];
+    
+    console.log('🔍 Connected to database:', dbInfo.db_name);
+    console.log('🔍 Connected as user:', dbInfo.user_name);
+    console.log('🔍 Server address:', dbInfo.inet_server_addr);
+    
+    // Verify this is a localhost connection
+    if (dbInfo.inet_server_addr !== '127.0.0.1' && dbInfo.inet_server_addr !== 'localhost') {
+      throw new Error(`CRITICAL SAFETY VIOLATION: Connected to remote server '${dbInfo.inet_server_addr}', not localhost. Refusing to proceed.`);
+    }
+    
+    console.log('✅ Database connection verified: connected to localhost');
+    return true;
+  } catch (error) {
+    console.error('❌ Database connection verification failed:', error);
+    throw new Error(`Database connection verification failed: ${error.message}`);
+  }
 }

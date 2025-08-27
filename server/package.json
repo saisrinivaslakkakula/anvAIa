@@ -4,6 +4,9 @@
     "main": "index.js",
     "scripts": {
         "dev": "nodemon index.js --config nodemon.json",
+        "start": "node index.js",
+        "build": "prisma generate",
+        "db:migrate": "prisma migrate deploy",
         "test:e2e": "NODE_ENV=test E2E_ALLOW_RESET=true vitest run --config vitest.config.ts --reporter=verbose",
         "test:e2e:local": "NODE_ENV=test E2E_ALLOW_RESET=true DATABASE_URL='postgresql://localhost:5432/whisperbox' vitest run --config vitest.config.ts --reporter=verbose"
     },
