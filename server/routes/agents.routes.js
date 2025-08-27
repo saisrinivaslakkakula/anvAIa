@@ -1,5 +1,6 @@
 import express from 'express';
 import { AgentsService } from '../services/agents.service.js';
+import { ApplicationsService } from '../services/applications.service.js';
 
 const router = express.Router();
 
@@ -14,11 +15,15 @@ router.post('/run-researcher', async (_req, res) => {
   }
 });
 
-// applier: delegate to batch endpoint logic (simple proxy)
+// applier: delegate to batch endpoint logic (proper implementation)
 router.post('/run-applier', async (req, res) => {
-  // just call the handler above (keep shape same for smoke script)
-  req.url = '/api/applications/apply-next-batch';
-  req.app._router.handle(req, res);
+  try {
+    const limit = Number(req.body?.limit || 20);
+    const results = await ApplicationsService.processBatch(limit);
+    res.json({ ok: true, results });
+  } catch (e) {
+    res.status(500).json({ ok: false, error: String(e) });
+  }
 });
 
 router.get('/runs', async (_req, res) => {
