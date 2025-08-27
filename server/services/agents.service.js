@@ -24,7 +24,8 @@ export class AgentsService {
         agent: 'researcher',
         started_at: new Date(),
         finished_at: new Date(),
-        summary: `Found ${count} jobs; ${count} unique after dedupe`
+        summary: `Found ${count} jobs; ${count} unique after dedupe`,
+        created_at: new Date()
       }
     });
 
@@ -32,17 +33,26 @@ export class AgentsService {
   }
 
   static async runApplier() {
-    // This is handled by the applications service
-    // We just need to log the run
-    await prisma.agent_runs.create({
-      data: {
-        agent: 'applier',
-        started_at: new Date(),
-        finished_at: new Date(),
-        summary: 'Batch processing initiated'
-      }
-    });
-    return { ok: true };
+    try {
+      // This is handled by the applications service
+      // We just need to log the run and return results
+      await prisma.agent_runs.create({
+        data: {
+          agent: 'applier',
+          started_at: new Date(),
+          finished_at: new Date(),
+          summary: 'Batch processing initiated',
+          created_at: new Date()
+        }
+      });
+      
+      // Return empty results array for now since we're not actually processing applications
+      // In a real implementation, this would call ApplicationsService.processBatch()
+      return { ok: true, results: [] };
+    } catch (error) {
+      console.error('Error in runApplier:', error);
+      throw error;
+    }
   }
 
   static async getRuns() {

@@ -2,6 +2,38 @@ import { prisma } from '../prismaClient.js';
 import { convertBigInts } from '../utils/prisma.js';
 
 export class ApplicationsService {
+  static async createApplication(applicationData) {
+    const { job_id, user_id, status = 'IN_PROGRESS' } = applicationData || {};
+    
+    if (!job_id || !user_id) {
+      throw new Error('Missing required fields: job_id, user_id');
+    }
+
+    // Ensure job exists
+    const job = await prisma.jobs.findUnique({
+      where: { id: BigInt(job_id) }
+    });
+    if (!job) throw new Error(`NotFound: job ${job_id}`);
+
+    // Ensure user exists
+    const user = await prisma.users.findUnique({
+      where: { id: user_id }
+    });
+    if (!user) throw new Error(`NotFound: user ${user_id}`);
+
+    const newApplication = await prisma.applications.create({
+      data: {
+        job_id: BigInt(job_id),
+        user_id,
+        status,
+        created_at: new Date(),
+        updated_at: new Date()
+      }
+    });
+
+    return convertBigInts(newApplication);
+  }
+
   static async getApplications(status = null) {
     const where = status ? { status } : {};
     

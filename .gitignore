@@ -22,10 +22,43 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Environment files
 .env
+.env.local
+.env.development
+.env.test
+.env.production
+
+# Dependencies
 node_modules
 server/node_modules
 server/package-lock.json
 package-lock.json
+
+# Server specific
 server/.env
+server/.env.*
 api_smoke.sh
+
+# Prisma generated files
+server/generated/
+server/prisma/migrations/
+
+# Database files
+server/data/
+*.db
+*.sqlite
+*.sqlite3
+
+# Build outputs
+server/dist/
+server/build/
+
+# Test coverage
+coverage/
+*.lcov
+
+# Temporary files
+*.tmp
+*.temp

@@ -14,6 +14,15 @@ router.get('/', async (req, res) => {
   }
 });
 
+router.post('/', async (req, res) => {
+  try {
+    const application = await ApplicationsService.createApplication(req.body);
+    res.json({ ok: true, application });
+  } catch (e) {
+    res.status(400).json({ ok: false, error: String(e) });
+  }
+});
+
 router.patch('/:id', async (req, res) => {
   const id = Number(req.params.id);
   const { status, notes } = req.body || {};

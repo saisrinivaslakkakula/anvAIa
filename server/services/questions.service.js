@@ -43,8 +43,9 @@ export class QuestionsService {
     });
 
     // Move application to IN_PROGRESS if application_id exists
+    let application = null;
     if (question.application_id) {
-      await prisma.applications.update({
+      application = await prisma.applications.update({
         where: { id: question.application_id },
         data: {
           status: 'IN_PROGRESS',
@@ -53,7 +54,10 @@ export class QuestionsService {
       });
     }
 
-    return convertBigInts({ question });
+    return convertBigInts({ 
+      question, 
+      application 
+    });
   }
 
   static async createQuestion(questionData) {
@@ -89,8 +93,7 @@ export class QuestionsService {
       user_id = app.user_id;
     } else {
       // For now, we need a user_id. In a real app, this would come from authentication
-      // For now, let's create a default user or throw an error
-      throw new Error('user_id is required when application_id is not provided');
+      throw new Error('application_id is required to derive user_id');
     }
 
     // 3) insert question
@@ -98,7 +101,7 @@ export class QuestionsService {
       data: {
         user_id,
         job_id: BigInt(job_id),
-        application_id: application_id ? BigInt(application_id) : null,
+        application_id: BigInt(application_id),
         field_label,
         help_text: help_text || null,
         kb_key,
