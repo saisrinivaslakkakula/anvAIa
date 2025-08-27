@@ -20,7 +20,8 @@ export function buildApp() {
     app.use(express.static(path.join(__dirname, '../../dist')));
     
     // Handle React routing, return all requests to React app
-    app.get('*', (req, res) => {
+    // Use a more specific pattern to avoid path-to-regexp issues
+    app.get(/^(?!\/api).*/, (req, res) => {
       res.sendFile(path.join(__dirname, '../../dist/index.html'));
     });
   } else {
