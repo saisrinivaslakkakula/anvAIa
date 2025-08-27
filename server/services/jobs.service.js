@@ -1,51 +1,101 @@
-import { q, tx } from '../pg.js';
+import { prisma } from '../prismaClient.js';
+import { convertBigInts } from '../utils/prisma.js';
 
 export class JobsService {
   static async getAllJobs() {
-    const { rows } = await q(`
-      select id, internal_id, title, company, location, description, external_link, source, tags, scraped_at, created_at, updated_at
-      from jobs
-      order by scraped_at desc nulls last, id desc
-    `);
-    return rows;
+    const jobs = await prisma.jobs.findMany({
+      orderBy: [
+        { scraped_at: 'desc' },
+        { id: 'desc' }
+      ]
+    });
+    return convertBigInts(jobs);
   }
 
   static async importJobs(jobs) {
     if (!Array.isArray(jobs)) return { added: 0 };
     
     let added = 0;
-    await tx(async (db) => {
-      for (const job of jobs) {
-        // try upsert on external_link first, fallback to internal_id
+    
+    for (const job of jobs) {
+      try {
         if (job.external_link) {
-          const r = await db.query(
-            `insert into jobs (internal_id, title, company, location, description, external_link, source, scraped_at)
-             values ($1,$2,$3,$4,$5,$6,$7, coalesce($8, now()))
-             on conflict (external_link) do nothing`,
-            [job.internal_id || null, job.title, job.company, job.location || null, job.description || null, job.external_link, job.source || null, job.scraped_at || null]
-          );
-          added += r.rowCount || 0;
+          const result = await prisma.jobs.upsert({
+            where: { external_link: job.external_link },
+            update: {
+              title: job.title,
+              company: job.company,
+              location: job.location || null,
+              description: job.description || null,
+              source: job.source || null,
+              scraped_at: job.scraped_at ? new Date(job.scraped_at) : new Date(),
+              updated_at: new Date()
+            },
+            create: {
+              internal_id: job.internal_id || null,
+              title: job.title,
+              company: job.company,
+              location: job.location || null,
+              description: job.description || null,
+              external_link: job.external_link,
+              source: job.source || null,
+              scraped_at: job.scraped_at ? new Date(job.scraped_at) : new Date()
+            }
+          });
+          added++;
         } else if (job.internal_id) {
-          const r = await db.query(
-            `insert into jobs (internal_id, title, company, location, description, source, scraped_at)
-             values ($1,$2,$3,$4,$5,$6, coalesce($7, now()))
-             on conflict (internal_id) do nothing`,
-            [job.internal_id, job.title, job.company, job.location || null, job.description || null, job.source || null, job.scraped_at || null]
-          );
-          added += r.rowCount || 0;
+          const result = await prisma.jobs.upsert({
+            where: { internal_id: job.internal_id },
+            update: {
+              title: job.title,
+              company: job.company,
+              location: job.location || null,
+              description: job.description || null,
+              source: job.source || null,
+              scraped_at: job.scraped_at ? new Date(job.scraped_at) : new Date(),
+              updated_at: new Date()
+            },
+            create: {
+              internal_id: job.internal_id,
+              title: job.title,
+              company: job.company,
+              location: job.location || null,
+              description: job.description || null,
+              source: job.source || null,
+              scraped_at: job.scraped_at ? new Date(job.scraped_at) : new Date()
+            }
+          });
+          added++;
         }
+      } catch (error) {
+        console.error('Error importing job:', error);
       }
-    });
+    }
+    
     return { added };
   }
 
-  static async createMockJob(db, company, title, link, internal_id) {
-    const r = await db.query(
-      `insert into jobs (internal_id, title, company, location, description, external_link, source, scraped_at)
-       values ($1,$2,$3,$4,$5,$6,$7, now())
-       on conflict (external_link) do nothing`,
-      [internal_id, title, company, 'San Francisco, CA', `Mock ${title} at ${company}.`, link, 'Company Site']
-    );
-    return r.rowCount || 0;
+  static async createMockJob(company, title, link, internal_id) {
+    try {
+      const result = await prisma.jobs.create({
+        data: {
+          internal_id,
+          title,
+          company,
+          location: 'San Francisco, CA',
+          description: `Mock ${title} at ${company}.`,
+          external_link: link,
+          source: 'Company Site',
+          scraped_at: new Date()
+        }
+      });
+      return 1; // Return 1 for successful creation
+    } catch (error) {
+      if (error.code === 'P2002') {
+        // Unique constraint violation, job already exists
+        return 0;
+      }
+      throw error;
+    }
   }
 }

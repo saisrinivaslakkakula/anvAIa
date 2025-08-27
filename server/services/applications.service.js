@@ -1,123 +1,150 @@
-import { q, tx } from '../pg.js';
+import { prisma } from '../prismaClient.js';
+import { convertBigInts } from '../utils/prisma.js';
 
 export class ApplicationsService {
   static async getApplications(status = null) {
-    const params = [];
-    let where = '';
-    if (status) {
-      params.push(status);
-      where = `where a.status = $1`;
-    }
+    const where = status ? { status } : {};
     
-    const { rows } = await q(
-      `
-      select a.*, j.company, j.title, j.location, j.external_link
-      from applications a
-      join jobs j on j.id = a.job_id
-      ${where}
-      order by a.updated_at desc, a.id desc
-      `,
-      params
-    );
-    return rows;
+    const applications = await prisma.applications.findMany({
+      where,
+      include: {
+        jobs: {
+          select: {
+            company: true,
+            title: true,
+            location: true,
+            external_link: true
+          }
+        }
+      },
+      orderBy: [
+        { updated_at: 'desc' },
+        { id: 'desc' }
+      ]
+    });
+    
+    return convertBigInts(applications);
   }
 
   static async updateApplication(id, updates) {
     const { status, notes } = updates || {};
     if (!id) throw new Error('Invalid id');
 
-    return await tx(async (db) => {
-      const { rows } = await db.query(
-        `update applications
-         set status = coalesce($2, status),
-             notes  = coalesce($3, notes),
-             updated_at = now()
-         where id = $1
-         returning *`,
-        [id, status || null, notes ?? null]
-      );
-      if (!rows.length) throw new Error('Not found');
-
-      // audit trail
-      await db.query(
-        `insert into application_events (application_id, event, details)
-         values ($1, 'APPLICATION_STATUS_CHANGED', jsonb_build_object('to',$2,'note',$3))`,
-        [id, status || rows[0].status, notes ?? null]
-      );
-
-      return rows[0];
+    const updated = await prisma.applications.update({
+      where: { id: BigInt(id) },
+      data: {
+        status: status || undefined,
+        notes: notes ?? undefined,
+        updated_at: new Date()
+      }
     });
+
+    // Create audit trail event
+    await prisma.application_events.create({
+      data: {
+        application_id: BigInt(id),
+        event: 'APPLICATION_STATUS_CHANGED',
+        details: {
+          to: status || updated.status,
+          note: notes ?? null
+        }
+      }
+    });
+
+    return convertBigInts(updated);
   }
 
   static async processBatch(limit = 20) {
-    return await tx(async (db) => {
-      const cand = await db.query(
-        `select a.*
-         from applications a
-         where a.status in ('IN_PROGRESS','PARTIAL_FILLED','LOGIN_REQUIRED')
-         order by a.updated_at asc
-         limit $1`,
-        [limit]
-      );
-      
-      const out = [];
-      for (const a of cand.rows) {
-        const rnd = Math.random();
-        let newStatus = a.status;
-        let note = a.notes || null;
-
-        if (a.status === 'LOGIN_REQUIRED' && rnd < 0.5) {
-          newStatus = 'IN_PROGRESS';
-          note = 'Login resolved (mock).';
-        } else if (rnd < 0.6) {
-          newStatus = 'APPLIED';
-          note = 'Submitted successfully (mock).';
-        } else if (rnd < 0.8) {
-          newStatus = 'PARTIAL_FILLED';
-          note = 'Missing answers (mock).';
-
-          // maybe create a fresh open question if none exists
-          const hasOpen = await db.query(
-            `select 1 from questions where job_id = $1 and user_id = $2 and status = 'OPEN' limit 1`,
-            [a.job_id, a.user_id]
-          );
-          if (!hasOpen.rowCount) {
-            await db.query(
-              `insert into questions (user_id, job_id, application_id, field_label, help_text, kb_key, status)
-               values ($1,$2,$3,'Preferred location?','Select one','preferred_location','OPEN')`,
-              [a.user_id, a.job_id, a.id]
-            );
-          }
-        } else {
-          newStatus = 'FAILED';
-          note = 'Portal error (mock).';
+    const candidates = await prisma.applications.findMany({
+      where: {
+        status: {
+          in: ['IN_PROGRESS', 'PARTIAL_FILLED', 'LOGIN_REQUIRED']
         }
+      },
+      orderBy: { updated_at: 'asc' },
+      take: limit
+    });
 
-        const { rows } = await db.query(
-          `update applications
-           set status = $2, notes = $3, updated_at = now()
-           where id = $1
-           returning id, status, notes`,
-          [a.id, newStatus, note]
-        );
-        
-        await db.query(
-          `insert into application_events (application_id, event, details)
-           values ($1, 'APPLICATION_STATUS_CHANGED', jsonb_build_object('to',$2,'note',$3))`,
-          [a.id, newStatus, note]
-        );
-        
-        out.push(rows[0]);
+    const results = [];
+    
+    for (const app of candidates) {
+      const rnd = Math.random();
+      let newStatus = app.status;
+      let note = app.notes || null;
+
+      if (app.status === 'LOGIN_REQUIRED' && rnd < 0.5) {
+        newStatus = 'IN_PROGRESS';
+        note = 'Login resolved (mock).';
+      } else if (rnd < 0.6) {
+        newStatus = 'APPLIED';
+        note = 'Submitted successfully (mock).';
+      } else if (rnd < 0.8) {
+        newStatus = 'PARTIAL_FILLED';
+        note = 'Missing answers (mock).';
+
+        // Check if there's already an open question
+        const existingQuestion = await prisma.questions.findFirst({
+          where: {
+            job_id: app.job_id,
+            user_id: app.user_id,
+            status: 'OPEN'
+          }
+        });
+
+        if (!existingQuestion) {
+          // Create a new question
+          await prisma.questions.create({
+            data: {
+              user_id: app.user_id,
+              job_id: app.job_id,
+              application_id: app.id,
+              field_label: 'Preferred location?',
+              help_text: 'Select one',
+              kb_key: 'preferred_location',
+              status: 'OPEN'
+            }
+          });
+        }
+      } else {
+        newStatus = 'FAILED';
+        note = 'Portal error (mock).';
       }
 
-      // agent run log
-      await db.query(
-        `insert into agent_runs (agent, started_at, finished_at, summary)
-         values ('applier', now(), now(), $1)`,
-        [`Batch processed ${out.length} applications`]
-      );
+      // Update application
+      const updated = await prisma.applications.update({
+        where: { id: app.id },
+        data: {
+          status: newStatus,
+          notes: note,
+          updated_at: new Date()
+        }
+      });
 
-      return out;
+      // Create audit trail event
+      await prisma.application_events.create({
+        data: {
+          application_id: app.id,
+          event: 'APPLICATION_STATUS_CHANGED',
+          details: {
+            to: newStatus,
+            note: note
+          }
+        }
+      });
+
+      results.push(updated);
+    }
+
+    // Log agent run
+    await prisma.agent_runs.create({
+      data: {
+        agent: 'applier',
+        started_at: new Date(),
+        finished_at: new Date(),
+        summary: `Batch processed ${results.length} applications`
+      }
     });
+
+    return convertBigInts(results);
   }
 }

@@ -1,0 +1,151 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model admin {
+  id       Int    @id @default(autoincrement())
+  username String @db.VarChar(255)
+  password String @db.VarChar(255)
+}
+
+model agent_runs {
+  id          BigInt     @id @default(autoincrement())
+  agent       agent_type
+  started_at  DateTime   @db.Timestamptz(6)
+  finished_at DateTime?  @db.Timestamptz(6)
+  summary     String?
+  raw         Json?
+  created_at  DateTime   @default(now()) @db.Timestamptz(6)
+
+  @@index([started_at(sort: Desc)], map: "idx_agent_runs_started")
+}
+
+model application_events {
+  id             BigInt       @id @default(autoincrement())
+  application_id BigInt
+  event          event_type
+  details        Json?
+  created_at     DateTime     @default(now()) @db.Timestamptz(6)
+  applications   applications @relation(fields: [application_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([application_id], map: "idx_app_events_app")
+  @@index([event], map: "idx_app_events_event")
+}
+
+model applications {
+  id                 BigInt               @id @default(autoincrement())
+  user_id            String               @db.Uuid
+  job_id             BigInt
+  status             app_status           @default(IN_PROGRESS)
+  notes              String?
+  meta               Json?
+  created_at         DateTime             @default(now()) @db.Timestamptz(6)
+  updated_at         DateTime             @default(now()) @db.Timestamptz(6)
+  application_events application_events[]
+  jobs               jobs                 @relation(fields: [job_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users              users                @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  questions          questions[]
+
+  @@unique([user_id, job_id])
+  @@index([status], map: "idx_applications_status")
+  @@index([user_id, status], map: "idx_applications_user_status")
+}
+
+model jobs {
+  id            BigInt         @id @default(autoincrement())
+  internal_id   String?        @unique
+  title         String
+  company       String
+  location      String?
+  description   String?
+  external_link String?        @unique
+  source        String?
+  tags          String[]       @default([])
+  scraped_at    DateTime       @default(now()) @db.Timestamptz(6)
+  created_at    DateTime       @default(now()) @db.Timestamptz(6)
+  updated_at    DateTime       @default(now()) @db.Timestamptz(6)
+  applications  applications[]
+  questions     questions[]
+}
+
+model knowledge_base {
+  id         BigInt   @id @default(autoincrement())
+  user_id    String   @db.Uuid
+  key        String
+  value      String
+  updated_at DateTime @default(now()) @db.Timestamptz(6)
+  users      users    @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([user_id, key])
+}
+
+model messages {
+  id        Int       @id @default(autoincrement())
+  message   String
+  timestamp DateTime? @default(now()) @db.Timestamptz(6)
+}
+
+model questions {
+  id             BigInt          @id @default(autoincrement())
+  user_id        String          @db.Uuid
+  job_id         BigInt
+  application_id BigInt?
+  field_label    String
+  help_text      String?
+  kb_key         String?
+  answer         String?
+  status         question_status @default(OPEN)
+  created_at     DateTime        @default(now()) @db.Timestamptz(6)
+  updated_at     DateTime        @default(now()) @db.Timestamptz(6)
+  applications   applications?   @relation(fields: [application_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  jobs           jobs            @relation(fields: [job_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users          users           @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([status], map: "idx_questions_status")
+}
+
+model users {
+  id             String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email          String?          @unique @db.Citext
+  full_name      String?
+  created_at     DateTime         @default(now()) @db.Timestamptz(6)
+  applications   applications[]
+  knowledge_base knowledge_base[]
+  questions      questions[]
+}
+
+enum agent_type {
+  researcher
+  applier
+}
+
+enum app_status {
+  APPLIED
+  PARTIAL_FILLED
+  LOGIN_REQUIRED
+  IN_PROGRESS
+  FAILED
+  SKIPPED
+}
+
+enum event_type {
+  APPLICATION_CREATED
+  APPLICATION_STATUS_CHANGED
+  QUESTION_CREATED
+  QUESTION_ANSWERED
+  AGENT_RUN_STARTED
+  AGENT_RUN_FINISHED
+  JOB_IMPORTED
+}
+
+enum question_status {
+  OPEN
+  ANSWERED
+  INVALID
+}

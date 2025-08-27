@@ -1,25 +1,29 @@
-import { q, tx } from '../pg.js';
+import { prisma } from '../prismaClient.js';
+import { convertBigInts } from '../utils/prisma.js';
 
 export class QuestionsService {
   static async getQuestions(status = null) {
-    const params = [];
-    let where = '';
-    if (status) { 
-      where = `where q.status = $1`; 
-      params.push(status); 
-    }
-
-    const { rows } = await q(
-      `
-      select q.*, j.company, j.title, j.location, j.external_link
-      from questions q
-      join jobs j on j.id = q.job_id
-      ${where}
-      order by q.updated_at desc, q.id desc
-      `,
-      params
-    );
-    return rows;
+    const where = status ? { status } : {};
+    
+    const questions = await prisma.questions.findMany({
+      where,
+      include: {
+        jobs: {
+          select: {
+            company: true,
+            title: true,
+            location: true,
+            external_link: true
+          }
+        }
+      },
+      orderBy: [
+        { updated_at: 'desc' },
+        { id: 'desc' }
+      ]
+    });
+    
+    return convertBigInts(questions);
   }
 
   static async answerQuestion(id, answer) {
@@ -28,34 +32,36 @@ export class QuestionsService {
       throw new Error('Answer required');
     }
 
-    return await tx(async (db) => {
-      const qRow = await db.query(
-        `update questions
-         set answer = $2, status = 'ANSWERED', updated_at = now()
-         where id = $1
-         returning *`,
-        [id, answer.trim()]
-      );
-      if (!qRow.rowCount) throw new Error('Not found');
-
-      // move application to IN_PROGRESS
-      const appRow = await db.query(
-        `update applications
-         set status = 'IN_PROGRESS', updated_at = now()
-         where id = $1
-         returning *`,
-        [qRow.rows[0].application_id]
-      );
-      return { question: qRow.rows[0], application: appRow.rows[0] || null };
+    // Update question
+    const question = await prisma.questions.update({
+      where: { id: BigInt(id) },
+      data: {
+        answer: answer.trim(),
+        status: 'ANSWERED',
+        updated_at: new Date()
+      }
     });
+
+    // Move application to IN_PROGRESS if application_id exists
+    if (question.application_id) {
+      await prisma.applications.update({
+        where: { id: question.application_id },
+        data: {
+          status: 'IN_PROGRESS',
+          updated_at: new Date()
+        }
+      });
+    }
+
+    return convertBigInts({ question });
   }
 
   static async createQuestion(questionData) {
     const { job_id, application_id, field_label, help_text, kb_key, status } = questionData;
 
     // Basic validation
-    if (!job_id || !application_id || !field_label || !kb_key || !status) {
-      throw new Error('Missing required fields: job_id, application_id, field_label, kb_key, status');
+    if (!job_id || !field_label || !kb_key || !status) {
+      throw new Error('Missing required fields: job_id, field_label, kb_key, status');
     }
 
     // Optional: enum validation in app layer (Postgres will also enforce)
@@ -64,32 +70,42 @@ export class QuestionsService {
       throw new Error(`Invalid status '${status}'. Allowed: OPEN, ANSWERED, INVALID`);
     }
 
-    return await tx(async (db) => {
-      // 1) ensure job exists
-      const job = await db.query(`select id from jobs where id = $1`, [job_id]);
-      if (!job.rowCount) throw new Error(`NotFound: job ${job_id}`);
+    // 1) ensure job exists
+    const job = await prisma.jobs.findUnique({
+      where: { id: BigInt(job_id) }
+    });
+    if (!job) throw new Error(`NotFound: job ${job_id}`);
 
-      // 2) load application & ensure it belongs to the same job
-      const appRow = await db.query(
-        `select id, user_id, job_id from applications where id = $1`,
-        [application_id]
-      );
-      if (!appRow.rowCount) throw new Error(`NotFound: application ${application_id}`);
-
-      const app = appRow.rows[0];
-      if (Number(app.job_id) !== Number(job_id)) {
+    // 2) if application_id is provided, load application & ensure it belongs to the same job
+    let user_id;
+    if (application_id) {
+      const app = await prisma.applications.findUnique({
+        where: { id: BigInt(application_id) }
+      });
+      if (!app) throw new Error(`NotFound: application ${application_id}`);
+      if (app.job_id !== BigInt(job_id)) {
         throw new Error(`BadRequest: application ${application_id} is for job ${app.job_id}, not ${job_id}`);
       }
+      user_id = app.user_id;
+    } else {
+      // For now, we need a user_id. In a real app, this would come from authentication
+      // For now, let's create a default user or throw an error
+      throw new Error('user_id is required when application_id is not provided');
+    }
 
-      // 3) insert question, derive user_id from application
-      const ins = await db.query(
-        `insert into questions (user_id, job_id, application_id, field_label, help_text, kb_key, status)
-         values ($1,$2,$3,$4,$5,$6,$7)
-         returning *`,
-        [app.user_id, job_id, application_id, field_label, help_text || null, kb_key, status]
-      );
-
-      return ins.rows[0];
+    // 3) insert question
+    const question = await prisma.questions.create({
+      data: {
+        user_id,
+        job_id: BigInt(job_id),
+        application_id: application_id ? BigInt(application_id) : null,
+        field_label,
+        help_text: help_text || null,
+        kb_key,
+        status
+      }
     });
+
+    return convertBigInts(question);
   }
 }
