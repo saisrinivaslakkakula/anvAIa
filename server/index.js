@@ -17,13 +17,45 @@ export function buildApp() {
   
   // Serve static files from the React build
   if (process.env.NODE_ENV === 'production') {
-    app.use(express.static(path.join(__dirname, '../../dist')));
+    // Try multiple possible paths for the dist folder
+    const possiblePaths = [
+      path.join(__dirname, '../../dist'),
+      path.join(__dirname, '../dist'),
+      path.join(__dirname, 'dist'),
+      path.join(process.cwd(), 'dist')
+    ];
     
-    // Handle React routing, return all requests to React app
-    // Use a more specific pattern to avoid path-to-regexp issues
-    app.get(/^(?!\/api).*/, (req, res) => {
-      res.sendFile(path.join(__dirname, '../../dist/index.html'));
-    });
+    let distPath = null;
+    for (const p of possiblePaths) {
+      try {
+        require('fs').accessSync(p);
+        distPath = p;
+        break;
+      } catch (e) {
+        // Path doesn't exist, try next one
+      }
+    }
+    
+    if (distPath) {
+      console.log(`Serving static files from: ${distPath}`);
+      app.use(express.static(distPath));
+      
+      // Handle React routing, return all requests to React app
+      // Use a more specific pattern to avoid path-to-regexp issues
+      app.get(/^(?!\/api).*/, (req, res) => {
+        res.sendFile(path.join(distPath, 'index.html'));
+      });
+    } else {
+      console.error('Could not find dist folder. Available paths tried:', possiblePaths);
+      // Fallback: serve a simple message
+      app.get(/^(?!\/api).*/, (req, res) => {
+        res.status(404).json({ 
+          ok: false, 
+          error: 'Frontend not built. Please check build process.',
+          availablePaths: possiblePaths
+        });
+      });
+    }
   } else {
     app.use((req, res) => res.status(404).json({ ok: false, error: 'Not Found' }));
   }
