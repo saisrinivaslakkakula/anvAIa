@@ -1,10 +1,20 @@
 import { useState } from "react";
+import type { Question } from "../lib/types";
+
+type QuestionWithJob = Question & {
+    job?: {
+        company: string;
+        title: string;
+        location?: string;
+        external_link?: string;
+    };
+};
 
 export default function QuestionItem({
     q,
     onSave,
 }: {
-    q: any; // has q.job injected by db.ts
+    q: QuestionWithJob;
     onSave: (id: number, ans: string) => void;
 }) {
     const [a, setA] = useState(q.answer ?? "");

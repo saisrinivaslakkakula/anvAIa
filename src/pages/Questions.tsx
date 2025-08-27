@@ -2,15 +2,26 @@
 import { useEffect, useState } from "react";
 import QuestionItem from "../components/QuestionItem";
 import { api } from "../lib/api";
+import type { Question } from "../lib/types";
+
+// Extended type for questions with job data
+type QuestionWithJob = Question & {
+    job?: {
+        company: string;
+        title: string;
+        location?: string;
+        external_link?: string;
+    };
+};
 
 export default function Questions() {
-    const [items, setItems] = useState<any[]>([]);
+    const [items, setItems] = useState<QuestionWithJob[]>([]);
     const [toast, setToast] = useState("");
 
     const refresh = async () => {
         try {
             const rows = await api.questions("OPEN");
-            setItems(rows);
+            setItems(rows as QuestionWithJob[]);
         } catch (error) {
             console.error("Failed to fetch questions:", error);
             setToast("Failed to fetch questions");
