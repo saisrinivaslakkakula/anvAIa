@@ -2,6 +2,14 @@ import { useEffect, useState } from "react";
 import { api } from "../lib/api";
 import StatusPill from "../components/StatusPill";
 import ApplicationsTable from "../components/ApplicationsTable";
+import type { Application, Job } from "../lib/types";
+
+type ApplicationWithJob = Application & {
+    job?: Job;
+    company?: string;
+    title?: string;
+    external_link?: string;
+};
 
 export default function Dashboard() {
     const [counts, setCounts] = useState({
@@ -9,7 +17,7 @@ export default function Dashboard() {
         inProgress: 0,
         openQs: 0,
     });
-    const [recent, setRecent] = useState<any[]>([]);
+    const [recent, setRecent] = useState<ApplicationWithJob[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -27,7 +35,7 @@ export default function Dashboard() {
                         .length,
                     openQs: qs.length,
                 });
-                setRecent(apps.slice(0, 6)); // simple recent for now
+                setRecent(apps.slice(0, 6) as ApplicationWithJob[]); // simple recent for now
             } catch (error) {
                 console.error("Failed to fetch dashboard data:", error);
             } finally {
@@ -83,7 +91,7 @@ export default function Dashboard() {
                             </tr>
                         </thead>
                         <tbody>
-                            {recent.map((r: any) => (
+                            {recent.map((r: ApplicationWithJob) => (
                                 <tr key={r.id} className="border-t">
                                     <td className="py-2 pr-4">
                                         {r.company ?? r.job?.company}
@@ -103,7 +111,7 @@ export default function Dashboard() {
                                         <a
                                             className="text-indigo-600 hover:underline"
                                             href={
-                                                (r as any).external_link ??
+                                                r.external_link ??
                                                 r.job?.external_link
                                             }
                                             target="_blank"
