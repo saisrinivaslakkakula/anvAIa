@@ -13,7 +13,7 @@ export default function Nav() {
                     <NavLink
                         to="/"
                         end
-                        className={({ isActive }) =>
+                        className={({ isActive }: { isActive: boolean }) =>
                             `${link} ${isActive ? active : ""}`
                         }
                     >
@@ -21,7 +21,7 @@ export default function Nav() {
                     </NavLink>
                     <NavLink
                         to="/questions"
-                        className={({ isActive }) =>
+                        className={({ isActive }: { isActive: boolean }) =>
                             `${link} ${isActive ? active : ""}`
                         }
                     >
@@ -29,7 +29,7 @@ export default function Nav() {
                     </NavLink>
                     <NavLink
                         to="/agents"
-                        className={({ isActive }) =>
+                        className={({ isActive }: { isActive: boolean }) =>
                             `${link} ${isActive ? active : ""}`
                         }
                     >

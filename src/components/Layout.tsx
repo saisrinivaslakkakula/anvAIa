@@ -32,25 +32,31 @@ export default function Layout({
                             <NavLink
                                 to="/"
                                 end
-                                className={({ isActive }) =>
-                                    `${link} ${isActive ? active : idle}`
-                                }
+                                className={({
+                                    isActive,
+                                }: {
+                                    isActive: boolean;
+                                }) => `${link} ${isActive ? active : idle}`}
                             >
                                 <span>🏠</span> <span>Dashboard</span>
                             </NavLink>
                             <NavLink
                                 to="/questions"
-                                className={({ isActive }) =>
-                                    `${link} ${isActive ? active : idle}`
-                                }
+                                className={({
+                                    isActive,
+                                }: {
+                                    isActive: boolean;
+                                }) => `${link} ${isActive ? active : idle}`}
                             >
                                 <span>❓</span> <span>Questions</span>
                             </NavLink>
                             <NavLink
                                 to="/agents"
-                                className={({ isActive }) =>
-                                    `${link} ${isActive ? active : idle}`
-                                }
+                                className={({
+                                    isActive,
+                                }: {
+                                    isActive: boolean;
+                                }) => `${link} ${isActive ? active : idle}`}
                             >
                                 <span>🤖</span> <span>Agent Console</span>
                             </NavLink>

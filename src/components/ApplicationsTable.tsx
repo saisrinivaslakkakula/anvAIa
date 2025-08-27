@@ -1,6 +1,14 @@
 import { useEffect, useMemo, useState } from "react";
 import { api } from "../lib/api";
 import StatusPill from "./StatusPill";
+import type { Application } from "../lib/types";
+
+type ApplicationWithDetails = Application & {
+    company?: string;
+    title?: string;
+    location?: string;
+    external_link?: string;
+};
 
 const ALL_STATUSES = [
     "ALL",
@@ -15,7 +23,9 @@ const ALL_STATUSES = [
 export default function ApplicationsTable() {
     const [status, setStatus] = useState<(typeof ALL_STATUSES)[number]>("ALL");
     const [search, setSearch] = useState("");
-    const [applications, setApplications] = useState<any[]>([]);
+    const [applications, setApplications] = useState<ApplicationWithDetails[]>(
+        []
+    );
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -23,7 +33,7 @@ export default function ApplicationsTable() {
             try {
                 setLoading(true);
                 const apps = await api.applications();
-                setApplications(apps);
+                setApplications(apps as ApplicationWithDetails[]);
             } catch (error) {
                 console.error("Failed to fetch applications:", error);
             } finally {
@@ -38,13 +48,15 @@ export default function ApplicationsTable() {
         let filtered = applications;
 
         if (status !== "ALL") {
-            filtered = filtered.filter((r) => r.status === status);
+            filtered = filtered.filter(
+                (r: ApplicationWithDetails) => r.status === status
+            );
         }
 
         if (search.trim()) {
             const q = search.toLowerCase();
             filtered = filtered.filter(
-                (r) =>
+                (r: ApplicationWithDetails) =>
                     r.company?.toLowerCase().includes(q) ||
                     r.title?.toLowerCase().includes(q) ||
                     r.location?.toLowerCase().includes(q)
@@ -53,7 +65,7 @@ export default function ApplicationsTable() {
 
         // newest updated first
         return filtered.sort(
-            (a, b) =>
+            (a: ApplicationWithDetails, b: ApplicationWithDetails) =>
                 new Date(b.updated_at).getTime() -
                 new Date(a.updated_at).getTime()
         );
@@ -82,7 +94,11 @@ export default function ApplicationsTable() {
                     <select
                         className="border rounded px-2 py-1 text-sm"
                         value={status}
-                        onChange={(e) => setStatus(e.target.value as any)}
+                        onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+                            setStatus(
+                                e.target.value as (typeof ALL_STATUSES)[number]
+                            )
+                        }
                     >
                         {ALL_STATUSES.map((s) => (
                             <option key={s} value={s}>
@@ -94,7 +110,9 @@ export default function ApplicationsTable() {
                         className="border rounded px-2 py-1 text-sm"
                         placeholder="Search company, title, location"
                         value={search}
-                        onChange={(e) => setSearch(e.target.value)}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                            setSearch(e.target.value)
+                        }
                     />
                 </div>
             </div>
@@ -112,7 +130,7 @@ export default function ApplicationsTable() {
                         </tr>
                     </thead>
                     <tbody>
-                        {rows.map((r) => (
+                        {rows.map((r: ApplicationWithDetails) => (
                             <tr key={r.id} className="border-t">
                                 <td className="py-2 pr-4">{r.company}</td>
                                 <td className="py-2 pr-4">{r.title}</td>

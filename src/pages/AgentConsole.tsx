@@ -1,15 +1,16 @@
 // src/pages/AgentConsole.tsx
 import { useEffect, useState } from "react";
 import { api } from "../lib/api";
+import type { RunLog } from "../lib/types";
 
 export default function AgentConsole() {
-    const [runs, setRuns] = useState<any[]>([]);
+    const [runs, setRuns] = useState<RunLog[]>([]);
     const [loading, setLoading] = useState(false);
 
     const refresh = async () => {
         try {
             const runsData = await api.runs();
-            setRuns(runsData);
+            setRuns(runsData as RunLog[]);
         } catch (error) {
             console.error("Failed to fetch runs:", error);
         }
@@ -82,7 +83,7 @@ export default function AgentConsole() {
                             </tr>
                         </thead>
                         <tbody>
-                            {runs.map((r: any) => (
+                            {runs.map((r: RunLog) => (
                                 <tr key={r.id} className="border-t">
                                     <td className="py-2 pr-4 capitalize">
                                         {r.agent}
