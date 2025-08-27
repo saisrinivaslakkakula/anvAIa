@@ -9,6 +9,7 @@
         "build:server": "cd server && npm run build",
         "build:all": "npm run build && npm run build:server",
         "build:render": "npm install && npm run build:all",
+        "build:render:debug": "pwd && ls -la && npm install && npm run build && npm run build:server && echo 'BUILD COMPLETE' && ls -la && ls -la dist/ || echo 'DIST NOT FOUND'",
         "start": "cd server && npm start",
         "lint": "eslint .",
         "preview": "vite preview",

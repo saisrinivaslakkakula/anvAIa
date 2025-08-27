@@ -3,19 +3,7 @@ services:
       name: job-agents-api
       env: node
       plan: free
-      buildCommand: |
-        echo "Starting build process..."
-        echo "Current directory: $(pwd)"
-        echo "Installing dependencies..."
-        npm install
-        echo "Building frontend..."
-        npm run build
-        echo "Building server..."
-        npm run build:server
-        echo "Build complete. Contents of dist folder:"
-        ls -la dist/ || echo "dist folder not found"
-        echo "Contents of current directory:"
-        ls -la
+      buildCommand: npm run build:render:debug
       startCommand: npm start
       envVars:
           - key: NODE_ENV
