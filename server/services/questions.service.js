@@ -23,7 +23,34 @@ export class QuestionsService {
       ]
     });
     
-    return convertBigInts(questions);
+    // Flatten the nested jobs data and ensure proper date handling
+    const flattenedQuestions = questions.map(q => {
+      const { jobs, ...questionData } = q;
+      
+      // Fix date handling - ensure we have valid dates
+      let created_at = questionData.created_at;
+      let updated_at = questionData.updated_at;
+      
+      // If dates are invalid objects or null, create new dates
+      if (!created_at || typeof created_at !== 'object' || created_at.constructor !== Date) {
+        created_at = new Date();
+      }
+      if (!updated_at || typeof updated_at !== 'object' || updated_at.constructor !== Date) {
+        updated_at = new Date();
+      }
+      
+      return {
+        ...questionData,
+        company: jobs?.company || null,
+        title: jobs?.title || null,
+        location: jobs?.location || null,
+        external_link: jobs?.external_link || null,
+        created_at: created_at,
+        updated_at: updated_at
+      };
+    });
+    
+    return convertBigInts(flattenedQuestions);
   }
 
   static async answerQuestion(id, answer) {

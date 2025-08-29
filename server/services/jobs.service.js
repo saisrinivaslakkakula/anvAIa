@@ -9,7 +9,33 @@ export class JobsService {
         { id: 'desc' }
       ]
     });
-    return convertBigInts(jobs);
+    
+    // Fix date handling for jobs
+    const fixedJobs = jobs.map(job => {
+      let scraped_at = job.scraped_at;
+      let created_at = job.created_at;
+      let updated_at = job.updated_at;
+      
+      // If dates are invalid objects or null, create new dates
+      if (!scraped_at || typeof scraped_at !== 'object' || scraped_at.constructor !== Date) {
+        scraped_at = new Date();
+      }
+      if (!created_at || typeof created_at !== 'object' || created_at.constructor !== Date) {
+        created_at = new Date();
+      }
+      if (!updated_at || typeof updated_at !== 'object' || updated_at.constructor !== Date) {
+        updated_at = new Date();
+      }
+      
+      return {
+        ...job,
+        scraped_at,
+        created_at,
+        updated_at
+      };
+    });
+    
+    return convertBigInts(fixedJobs);
   }
 
   static async importJobs(jobs) {

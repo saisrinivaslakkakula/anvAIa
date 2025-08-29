@@ -58,15 +58,27 @@ export class ApplicationsService {
     // Flatten the nested jobs data and ensure proper date handling
     const flattenedApplications = applications.map(app => {
       const { jobs, ...appData } = app;
+      
+      // Fix date handling - ensure we have valid dates
+      let created_at = appData.created_at;
+      let updated_at = appData.updated_at;
+      
+      // If dates are invalid objects or null, create new dates
+      if (!created_at || typeof created_at !== 'object' || created_at.constructor !== Date) {
+        created_at = new Date();
+      }
+      if (!updated_at || typeof updated_at !== 'object' || updated_at.constructor !== Date) {
+        updated_at = new Date();
+      }
+      
       return {
         ...appData,
         company: jobs?.company || null,
         title: jobs?.title || null,
         location: jobs?.location || null,
         external_link: jobs?.external_link || null,
-        // Ensure dates are properly formatted
-        created_at: appData.created_at || new Date(),
-        updated_at: appData.updated_at || new Date()
+        created_at: created_at,
+        updated_at: updated_at
       };
     });
     
