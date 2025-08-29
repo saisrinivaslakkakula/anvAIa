@@ -55,7 +55,22 @@ export class ApplicationsService {
       ]
     });
     
-    return convertBigInts(applications);
+    // Flatten the nested jobs data and ensure proper date handling
+    const flattenedApplications = applications.map(app => {
+      const { jobs, ...appData } = app;
+      return {
+        ...appData,
+        company: jobs?.company || null,
+        title: jobs?.title || null,
+        location: jobs?.location || null,
+        external_link: jobs?.external_link || null,
+        // Ensure dates are properly formatted
+        created_at: appData.created_at || new Date(),
+        updated_at: appData.updated_at || new Date()
+      };
+    });
+    
+    return convertBigInts(flattenedApplications);
   }
 
   static async updateApplication(id, updates) {
