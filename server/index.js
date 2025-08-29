@@ -12,7 +12,7 @@ export function buildApp() {
   
   // Redirect all non-API requests to frontend service
   if (process.env.NODE_ENV === 'production') {
-    const frontendUrl = process.env.FRONTEND_URL || 'https://job-agents-frontend.onrender.com';
+    const frontendUrl = process.env.FRONTEND_URL || 'https://anvaia-site.onrender.com';
     
     app.get(/^(?!\/api).*/, (req, res) => {
       const targetUrl = `${frontendUrl}${req.path}`;

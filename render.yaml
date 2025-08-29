@@ -17,7 +17,7 @@ services:
                 name: job-agents-db
                 property: connectionString
           - key: FRONTEND_URL
-            value: https://job-agents-frontend.onrender.com
+            value: https://anvaia-site.onrender.com
       healthCheckPath: /api/health
       autoDeploy: true
 

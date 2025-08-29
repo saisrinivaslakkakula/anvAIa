@@ -10,16 +10,19 @@ We've split the application into two separate Render services:
 ## 🔧 Environment Variables
 
 ### Backend Service (`job-agents-api`)
-- `NODE_ENV`: `production`
-- `DATABASE_URL`: PostgreSQL connection string
-- `FRONTEND_URL`: `https://job-agents-frontend.onrender.com`
+
+-   `NODE_ENV`: `production`
+-   `DATABASE_URL`: PostgreSQL connection string
+-   `FRONTEND_URL`: `https://https://anvaia-site.onrender.com/`
 
 ### Frontend Service (`job-agents-frontend`)
-- `VITE_API_BASE_URL`: `https://job-agents-api.onrender.com`
+
+-   `VITE_API_BASE_URL`: `https://anvaia-site.onrender.com/`
 
 ## 🚀 Local Development
 
 ### Backend
+
 ```bash
 cd server
 npm install
@@ -28,6 +31,7 @@ npm start
 ```
 
 ### Frontend
+
 ```bash
 npm install
 npm run dev
@@ -35,7 +39,9 @@ npm run dev
 ```
 
 ### Environment Variables for Local Development
+
 Create `.env.local` in the root directory:
+
 ```bash
 VITE_API_BASE_URL=http://localhost:4000
 ```
@@ -49,6 +55,6 @@ VITE_API_BASE_URL=http://localhost:4000
 
 ## 📍 Service URLs
 
-- **Backend API**: `https://job-agents-api.onrender.com`
-- **Frontend App**: `https://job-agents-frontend.onrender.com`
-- **Database**: Managed by Render
+-   **Backend API**: `https://anvaiaapp.onrender.com`
+-   **Frontend App**: `https://anvaia-site.onrender.com/`
+-   **Database**: Managed by Render
