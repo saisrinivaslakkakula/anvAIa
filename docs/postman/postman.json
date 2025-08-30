@@ -1,0 +1,755 @@
+{
+	"info": {
+		"name": "Job Agents API",
+		"description": {
+		    "content": "A comprehensive API for managing job applications, automated job research, and application processing.\nThis system provides endpoints for job management, application tracking, question handling, and automated agent operations.\n",
+		    "type": "text/markdown"
+		},
+		"version": "1.0.0",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+	        {
+	            "name": "Applications",
+	            "item": [
+	                        {
+    "name": "/applications",
+                "description": "Retrieve applications with optional status filtering",
+                 "item": [
+                            {
+                                "name": "Get Applications",
+                                "request": {
+    "method": "GET",
+    "header": [
+        {
+        "key": "Accept",
+        "value": "application/json",
+        "description": "",
+        "disabled": false
+        }
+    ],
+    "body": {
+    "mode": "raw",
+    "raw": "",
+    "options": {
+    "raw": {
+    "language": "json"
+    }
+    }
+    },
+    "url": {
+    "raw": "{{baseUrl}}/applications",
+    "host": [
+    "{{baseUrl}}"
+    ],
+    "path": [
+        "applications"
+    ],
+    "variable": [
+    ],
+    "query": [
+        {
+        "key": "status",
+        "value": "",
+        "description": "Filter applications by status",
+        "disabled": true
+        }
+    ]
+    },
+    "description": "Retrieve applications with optional status filtering"
+}
+                                ,"response": [
+                            ]
+                            }
+                            ]
+                        },
+	                        {
+    "name": "/applications",
+                "description": "Create a new job application",
+                 "item": [
+                            {
+                                "name": "Create Application",
+                                "request": {
+    "method": "POST",
+    "header": [
+        {
+        "key": "Content-Type",
+        "value": "application/json",
+        "description": "",
+        "disabled": false
+        },
+        {
+        "key": "Accept",
+        "value": "application/json",
+        "description": "",
+        "disabled": false
+        }
+    ],
+    "body": {
+    "mode": "raw",
+    "raw": "{\n \"job_id\": \"<number>\",\n \"user_id\": \"<string>\",\n \"status\": \"<string>\"\n}",
+    "options": {
+    "raw": {
+    "language": "json"
+    }
+    }
+    },
+    "url": {
+    "raw": "{{baseUrl}}/applications",
+    "host": [
+    "{{baseUrl}}"
+    ],
+    "path": [
+        "applications"
+    ],
+    "variable": [
+    ],
+    "query": [
+    ]
+    },
+    "description": "Create a new job application"
+}
+                                ,"response": [
+                            ]
+                            }
+                            ]
+                        },
+	                        {
+    "name": "/applications/:id",
+                "description": "Update application status and notes",
+                 "item": [
+                            {
+                                "name": "Update Application",
+                                "request": {
+    "method": "PATCH",
+    "header": [
+        {
+        "key": "Content-Type",
+        "value": "application/json",
+        "description": "",
+        "disabled": false
+        },
+        {
+        "key": "Accept",
+        "value": "application/json",
+        "description": "",
+        "disabled": false
+        }
+    ],
+    "body": {
+    "mode": "raw",
+    "raw": "{\n \"status\": \"<string>\",\n \"notes\": \"<string>\"\n}",
+    "options": {
+    "raw": {
+    "language": "json"
+    }
+    }
+    },
+    "url": {
+    "raw": "{{baseUrl}}/applications/:id",
+    "host": [
+    "{{baseUrl}}"
+    ],
+    "path": [
+        "applications",
+        ":id"
+    ],
+    "variable": [
+        {
+        "key": "id",
+        "value": "",
+        "description": "Application ID"
+        }
+    ],
+    "query": [
+    ]
+    },
+    "description": "Update application status and notes"
+}
+                                ,"response": [
+                            ]
+                            }
+                            ]
+                        },
+	                        {
+    "name": "/applications/apply-next-batch",
+                "description": "Process a batch of applications with automated status updates (mock implementation)",
+                 "item": [
+                            {
+                                "name": "Process Application Batch",
+                                "request": {
+    "method": "POST",
+    "header": [
+        {
+        "key": "Content-Type",
+        "value": "application/json",
+        "description": "",
+        "disabled": false
+        },
+        {
+        "key": "Accept",
+        "value": "application/json",
+        "description": "",
+        "disabled": false
+        }
+    ],
+    "body": {
+    "mode": "raw",
+    "raw": "{\n \"limit\": \"<number>\"\n}",
+    "options": {
+    "raw": {
+    "language": "json"
+    }
+    }
+    },
+    "url": {
+    "raw": "{{baseUrl}}/applications/apply-next-batch",
+    "host": [
+    "{{baseUrl}}"
+    ],
+    "path": [
+        "applications",
+        "apply-next-batch"
+    ],
+    "variable": [
+    ],
+    "query": [
+    ]
+    },
+    "description": "Process a batch of applications with automated status updates (mock implementation)"
+}
+                                ,"response": [
+                            ]
+                            }
+                            ]
+                        }
+	                    ]
+	        },
+	        {
+	            "name": "Health",
+	            "item": [
+	                        {
+    "name": "/health",
+                "description": "Check the health status of the API and database connection",
+                 "item": [
+                            {
+                                "name": "Health Check",
+                                "request": {
+    "method": "GET",
+    "header": [
+        {
+        "key": "Accept",
+        "value": "application/json",
+        "description": "",
+        "disabled": false
+        }
+    ],
+    "body": {
+    "mode": "raw",
+    "raw": "",
+    "options": {
+    "raw": {
+    "language": "json"
+    }
+    }
+    },
+    "url": {
+    "raw": "{{baseUrl}}/health",
+    "host": [
+    "{{baseUrl}}"
+    ],
+    "path": [
+        "health"
+    ],
+    "variable": [
+    ],
+    "query": [
+    ]
+    },
+    "description": "Check the health status of the API and database connection"
+}
+                                ,"response": [
+                            ]
+                            }
+                            ]
+                        }
+	                    ]
+	        },
+	        {
+	            "name": "Jobs",
+	            "item": [
+	                        {
+    "name": "/jobs",
+                "description": "Retrieve all available jobs ordered by most recently scraped",
+                 "item": [
+                            {
+                                "name": "Get All Jobs",
+                                "request": {
+    "method": "GET",
+    "header": [
+        {
+        "key": "Accept",
+        "value": "application/json",
+        "description": "",
+        "disabled": false
+        }
+    ],
+    "body": {
+    "mode": "raw",
+    "raw": "",
+    "options": {
+    "raw": {
+    "language": "json"
+    }
+    }
+    },
+    "url": {
+    "raw": "{{baseUrl}}/jobs",
+    "host": [
+    "{{baseUrl}}"
+    ],
+    "path": [
+        "jobs"
+    ],
+    "variable": [
+    ],
+    "query": [
+    ]
+    },
+    "description": "Retrieve all available jobs ordered by most recently scraped"
+}
+                                ,"response": [
+                            ]
+                            }
+                            ]
+                        },
+	                        {
+    "name": "/jobs",
+                "description": "Create a new single job",
+                 "item": [
+                            {
+                                "name": "Create Job",
+                                "request": {
+    "method": "POST",
+    "header": [
+        {
+        "key": "Content-Type",
+        "value": "application/json",
+        "description": "",
+        "disabled": false
+        },
+        {
+        "key": "Accept",
+        "value": "application/json",
+        "description": "",
+        "disabled": false
+        }
+    ],
+    "body": {
+    "mode": "raw",
+    "raw": "{\n \"title\": \"<string>\",\n \"company\": \"<string>\",\n \"location\": \"<string>\",\n \"description\": \"<string>\",\n \"external_link\": \"<string>\",\n \"internal_id\": \"<string>\",\n \"source\": \"<string>\",\n \"tags\": \"<string>\"\n}",
+    "options": {
+    "raw": {
+    "language": "json"
+    }
+    }
+    },
+    "url": {
+    "raw": "{{baseUrl}}/jobs",
+    "host": [
+    "{{baseUrl}}"
+    ],
+    "path": [
+        "jobs"
+    ],
+    "variable": [
+    ],
+    "query": [
+    ]
+    },
+    "description": "Create a new single job"
+}
+                                ,"response": [
+                            ]
+                            }
+                            ]
+                        },
+	                        {
+    "name": "/jobs/import",
+                "description": "Import multiple jobs with deduplication based on external_link or internal_id",
+                 "item": [
+                            {
+                                "name": "Import Jobs",
+                                "request": {
+    "method": "POST",
+    "header": [
+        {
+        "key": "Content-Type",
+        "value": "application/json",
+        "description": "",
+        "disabled": false
+        },
+        {
+        "key": "Accept",
+        "value": "application/json",
+        "description": "",
+        "disabled": false
+        }
+    ],
+    "body": {
+    "mode": "raw",
+    "raw": "{\n \n}",
+    "options": {
+    "raw": {
+    "language": "json"
+    }
+    }
+    },
+    "url": {
+    "raw": "{{baseUrl}}/jobs/import",
+    "host": [
+    "{{baseUrl}}"
+    ],
+    "path": [
+        "jobs",
+        "import"
+    ],
+    "variable": [
+    ],
+    "query": [
+    ]
+    },
+    "description": "Import multiple jobs with deduplication based on external_link or internal_id"
+}
+                                ,"response": [
+                            ]
+                            }
+                            ]
+                        }
+	                    ]
+	        },
+	        {
+	            "name": "Agents",
+	            "item": [
+	                        {
+    "name": "/agents/run-applier",
+                "description": "Execute the applier agent to process application batches (mock implementation)",
+                 "item": [
+                            {
+                                "name": "Run Applier Agent",
+                                "request": {
+    "method": "POST",
+    "header": [
+        {
+        "key": "Content-Type",
+        "value": "application/json",
+        "description": "",
+        "disabled": false
+        },
+        {
+        "key": "Accept",
+        "value": "application/json",
+        "description": "",
+        "disabled": false
+        }
+    ],
+    "body": {
+    "mode": "raw",
+    "raw": "{\n \"limit\": \"<number>\"\n}",
+    "options": {
+    "raw": {
+    "language": "json"
+    }
+    }
+    },
+    "url": {
+    "raw": "{{baseUrl}}/agents/run-applier",
+    "host": [
+    "{{baseUrl}}"
+    ],
+    "path": [
+        "agents",
+        "run-applier"
+    ],
+    "variable": [
+    ],
+    "query": [
+    ]
+    },
+    "description": "Execute the applier agent to process application batches (mock implementation)"
+}
+                                ,"response": [
+                            ]
+                            }
+                            ]
+                        },
+	                        {
+    "name": "/agents/run-researcher",
+                "description": "Execute the researcher agent to find and import new jobs (mock implementation)",
+                 "item": [
+                            {
+                                "name": "Run Researcher Agent",
+                                "request": {
+    "method": "POST",
+    "header": [
+        {
+        "key": "Accept",
+        "value": "application/json",
+        "description": "",
+        "disabled": false
+        }
+    ],
+    "body": {
+    "mode": "raw",
+    "raw": "",
+    "options": {
+    "raw": {
+    "language": "json"
+    }
+    }
+    },
+    "url": {
+    "raw": "{{baseUrl}}/agents/run-researcher",
+    "host": [
+    "{{baseUrl}}"
+    ],
+    "path": [
+        "agents",
+        "run-researcher"
+    ],
+    "variable": [
+    ],
+    "query": [
+    ]
+    },
+    "description": "Execute the researcher agent to find and import new jobs (mock implementation)"
+}
+                                ,"response": [
+                            ]
+                            }
+                            ]
+                        },
+	                        {
+    "name": "/agents/runs",
+                "description": "Retrieve history of agent executions",
+                 "item": [
+                            {
+                                "name": "Get Agent Runs",
+                                "request": {
+    "method": "GET",
+    "header": [
+        {
+        "key": "Accept",
+        "value": "application/json",
+        "description": "",
+        "disabled": false
+        }
+    ],
+    "body": {
+    "mode": "raw",
+    "raw": "",
+    "options": {
+    "raw": {
+    "language": "json"
+    }
+    }
+    },
+    "url": {
+    "raw": "{{baseUrl}}/agents/runs",
+    "host": [
+    "{{baseUrl}}"
+    ],
+    "path": [
+        "agents",
+        "runs"
+    ],
+    "variable": [
+    ],
+    "query": [
+    ]
+    },
+    "description": "Retrieve history of agent executions"
+}
+                                ,"response": [
+                            ]
+                            }
+                            ]
+                        }
+	                    ]
+	        },
+	        {
+	            "name": "Questions",
+	            "item": [
+	                        {
+    "name": "/questions",
+                "description": "Retrieve questions with optional status filtering",
+                 "item": [
+                            {
+                                "name": "Get Questions",
+                                "request": {
+    "method": "GET",
+    "header": [
+        {
+        "key": "Accept",
+        "value": "application/json",
+        "description": "",
+        "disabled": false
+        }
+    ],
+    "body": {
+    "mode": "raw",
+    "raw": "",
+    "options": {
+    "raw": {
+    "language": "json"
+    }
+    }
+    },
+    "url": {
+    "raw": "{{baseUrl}}/questions",
+    "host": [
+    "{{baseUrl}}"
+    ],
+    "path": [
+        "questions"
+    ],
+    "variable": [
+    ],
+    "query": [
+        {
+        "key": "status",
+        "value": "",
+        "description": "Filter questions by status",
+        "disabled": true
+        }
+    ]
+    },
+    "description": "Retrieve questions with optional status filtering"
+}
+                                ,"response": [
+                            ]
+                            }
+                            ]
+                        },
+	                        {
+    "name": "/questions/:id",
+                "description": "Provide an answer to a question and update its status",
+                 "item": [
+                            {
+                                "name": "Answer Question",
+                                "request": {
+    "method": "PATCH",
+    "header": [
+        {
+        "key": "Content-Type",
+        "value": "application/json",
+        "description": "",
+        "disabled": false
+        },
+        {
+        "key": "Accept",
+        "value": "application/json",
+        "description": "",
+        "disabled": false
+        }
+    ],
+    "body": {
+    "mode": "raw",
+    "raw": "{\n \"answer\": \"<string>\"\n}",
+    "options": {
+    "raw": {
+    "language": "json"
+    }
+    }
+    },
+    "url": {
+    "raw": "{{baseUrl}}/questions/:id",
+    "host": [
+    "{{baseUrl}}"
+    ],
+    "path": [
+        "questions",
+        ":id"
+    ],
+    "variable": [
+        {
+        "key": "id",
+        "value": "",
+        "description": "Question ID"
+        }
+    ],
+    "query": [
+    ]
+    },
+    "description": "Provide an answer to a question and update its status"
+}
+                                ,"response": [
+                            ]
+                            }
+                            ]
+                        },
+	                        {
+    "name": "/questions/create",
+                "description": "Create a new question for a job application",
+                 "item": [
+                            {
+                                "name": "Create Question",
+                                "request": {
+    "method": "POST",
+    "header": [
+        {
+        "key": "Content-Type",
+        "value": "application/json",
+        "description": "",
+        "disabled": false
+        },
+        {
+        "key": "Accept",
+        "value": "application/json",
+        "description": "",
+        "disabled": false
+        }
+    ],
+    "body": {
+    "mode": "raw",
+    "raw": "{\n \"job_id\": \"<number>\",\n \"application_id\": \"<number>\",\n \"field_label\": \"<string>\",\n \"help_text\": \"<string>\",\n \"kb_key\": \"<string>\",\n \"status\": \"<string>\"\n}",
+    "options": {
+    "raw": {
+    "language": "json"
+    }
+    }
+    },
+    "url": {
+    "raw": "{{baseUrl}}/questions/create",
+    "host": [
+    "{{baseUrl}}"
+    ],
+    "path": [
+        "questions",
+        "create"
+    ],
+    "variable": [
+    ],
+    "query": [
+    ]
+    },
+    "description": "Create a new question for a job application"
+}
+                                ,"response": [
+                            ]
+                            }
+                            ]
+                        }
+	                    ]
+	        }
+    ],
+    
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:4000/api",
+			"type": "string"
+        }
+	]
+}
+

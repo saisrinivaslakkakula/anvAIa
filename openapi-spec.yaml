@@ -1,0 +1,1012 @@
+openapi: 3.0.3
+info:
+  title: Job Agents API
+  description: |
+    A comprehensive API for managing job applications, automated job research, and application processing.
+    This system provides endpoints for job management, application tracking, question handling, and automated agent operations.
+  version: 1.0.0
+  contact:
+    name: Job Agents Development Team
+  license:
+    name: ISC
+servers:
+  - url: http://localhost:4000/api
+    description: Development server
+  - url: https://anvaia-site.onrender.com/api
+    description: Production server
+  - url: /api
+    description: Relative path for proxy setups
+
+paths:
+  /health:
+    get:
+      summary: Health Check
+      description: Check the health status of the API and database connection
+      tags:
+        - Health
+      responses:
+        '200':
+          description: API is healthy and database is connected
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    example: true
+                  ts:
+                    type: string
+                    format: date-time
+                    example: "2024-01-15T10:30:00.000Z"
+        '500':
+          description: Database connection failed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    example: false
+                  error:
+                    type: string
+                    example: "Database connection failed"
+
+  /jobs:
+    get:
+      summary: Get All Jobs
+      description: Retrieve all available jobs ordered by most recently scraped
+      tags:
+        - Jobs
+      responses:
+        '200':
+          description: List of all jobs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Job'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    
+    post:
+      summary: Create Job
+      description: Create a new single job
+      tags:
+        - Jobs
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JobCreate'
+      responses:
+        '201':
+          description: Job created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    example: true
+                  job:
+                    $ref: '#/components/schemas/Job'
+        '400':
+          description: Bad request - missing required fields
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Conflict - job already exists with conflicting unique fields
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /jobs/import:
+    post:
+      summary: Import Jobs
+      description: Import multiple jobs with deduplication based on external_link or internal_id
+      tags:
+        - Jobs
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/JobImport'
+      responses:
+        '200':
+          description: Jobs imported successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    example: true
+                  added:
+                    type: integer
+                    description: Number of jobs successfully added/updated
+                    example: 5
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /applications:
+    get:
+      summary: Get Applications
+      description: Retrieve applications with optional status filtering
+      tags:
+        - Applications
+      parameters:
+        - name: status
+          in: query
+          description: Filter applications by status
+          required: false
+          schema:
+            $ref: '#/components/schemas/ApplicationStatus'
+      responses:
+        '200':
+          description: List of applications
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ApplicationWithJob'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    
+    post:
+      summary: Create Application
+      description: Create a new job application
+      tags:
+        - Applications
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApplicationCreate'
+      responses:
+        '200':
+          description: Application created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    example: true
+                  application:
+                    $ref: '#/components/schemas/Application'
+        '400':
+          description: Bad request - missing required fields
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /applications/{id}:
+    patch:
+      summary: Update Application
+      description: Update application status and notes
+      tags:
+        - Applications
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Application ID
+          schema:
+            type: integer
+            minimum: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApplicationUpdate'
+      responses:
+        '200':
+          description: Application updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    example: true
+                  application:
+                    $ref: '#/components/schemas/Application'
+        '400':
+          description: Bad request - invalid ID
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Application not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /applications/apply-next-batch:
+    post:
+      summary: Process Application Batch
+      description: Process a batch of applications with automated status updates (mock implementation)
+      tags:
+        - Applications
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                limit:
+                  type: integer
+                  description: Maximum number of applications to process
+                  default: 20
+                  minimum: 1
+                  maximum: 100
+      responses:
+        '200':
+          description: Batch processing completed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    example: true
+                  results:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Application'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /questions:
+    get:
+      summary: Get Questions
+      description: Retrieve questions with optional status filtering
+      tags:
+        - Questions
+      parameters:
+        - name: status
+          in: query
+          description: Filter questions by status
+          required: false
+          schema:
+            $ref: '#/components/schemas/QuestionStatus'
+      responses:
+        '200':
+          description: List of questions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/QuestionWithJob'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /questions/{id}:
+    patch:
+      summary: Answer Question
+      description: Provide an answer to a question and update its status
+      tags:
+        - Questions
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Question ID
+          schema:
+            type: integer
+            minimum: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - answer
+              properties:
+                answer:
+                  type: string
+                  description: The answer to the question
+                  minLength: 1
+      responses:
+        '200':
+          description: Question answered successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    example: true
+                  question:
+                    $ref: '#/components/schemas/Question'
+                  application:
+                    $ref: '#/components/schemas/Application'
+        '400':
+          description: Bad request - missing or invalid answer
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Question not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /questions/create:
+    post:
+      summary: Create Question
+      description: Create a new question for a job application
+      tags:
+        - Questions
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QuestionCreate'
+      responses:
+        '200':
+          description: Question created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    example: true
+                  question:
+                    $ref: '#/components/schemas/Question'
+        '400':
+          description: Bad request - missing required fields or validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Job or application not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /agents/run-researcher:
+    post:
+      summary: Run Researcher Agent
+      description: Execute the researcher agent to find and import new jobs (mock implementation)
+      tags:
+        - Agents
+      responses:
+        '200':
+          description: Researcher agent executed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    example: true
+                  added:
+                    type: integer
+                    description: Number of new jobs added
+                    example: 4
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /agents/run-applier:
+    post:
+      summary: Run Applier Agent
+      description: Execute the applier agent to process application batches (mock implementation)
+      tags:
+        - Agents
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                limit:
+                  type: integer
+                  description: Maximum number of applications to process
+                  default: 20
+                  minimum: 1
+                  maximum: 100
+      responses:
+        '200':
+          description: Applier agent executed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    example: true
+                  results:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Application'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /agents/runs:
+    get:
+      summary: Get Agent Runs
+      description: Retrieve history of agent executions
+      tags:
+        - Agents
+      responses:
+        '200':
+          description: List of agent runs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AgentRun'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    Job:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the job
+          example: "123456789"
+        internal_id:
+          type: string
+          nullable: true
+          description: Internal company job identifier
+          example: "2024-01-15-stripe-software-engineer-abc123"
+        title:
+          type: string
+          description: Job title
+          example: "Software Engineer"
+        company:
+          type: string
+          description: Company name
+          example: "Stripe"
+        location:
+          type: string
+          nullable: true
+          description: Job location
+          example: "San Francisco, CA"
+        description:
+          type: string
+          nullable: true
+          description: Job description
+        external_link:
+          type: string
+          nullable: true
+          description: External job posting URL
+          example: "https://jobs.stripe.com/abc123"
+        source:
+          type: string
+          nullable: true
+          description: Source of the job posting
+          example: "Company Site"
+        tags:
+          type: array
+          items:
+            type: string
+          description: Job tags
+          example: ["engineering", "backend", "full-time"]
+        scraped_at:
+          type: string
+          format: date-time
+          description: When the job was scraped
+          example: "2024-01-15T10:30:00.000Z"
+        created_at:
+          type: string
+          format: date-time
+          description: When the job was created in the system
+          example: "2024-01-15T10:30:00.000Z"
+        updated_at:
+          type: string
+          format: date-time
+          description: When the job was last updated
+          example: "2024-01-15T10:30:00.000Z"
+      required:
+        - id
+        - title
+        - company
+        - scraped_at
+        - created_at
+        - updated_at
+
+    JobCreate:
+      type: object
+      required:
+        - title
+        - company
+      properties:
+        title:
+          type: string
+          description: Job title
+          minLength: 1
+          example: "Software Engineer"
+        company:
+          type: string
+          description: Company name
+          minLength: 1
+          example: "Tech Corp"
+        location:
+          type: string
+          nullable: true
+          description: Job location
+          example: "San Francisco, CA"
+        description:
+          type: string
+          nullable: true
+          description: Job description
+          example: "We are looking for a talented software engineer..."
+        external_link:
+          type: string
+          nullable: true
+          description: External job posting URL
+          format: uri
+          example: "https://jobs.techcorp.com/software-engineer"
+        internal_id:
+          type: string
+          nullable: true
+          description: Internal company job identifier
+          example: "ENG-2024-001"
+        source:
+          type: string
+          nullable: true
+          description: Source of the job posting
+          example: "Company Website"
+        tags:
+          type: array
+          items:
+            type: string
+          description: Job tags
+          example: ["engineering", "full-time", "remote"]
+
+    JobImport:
+      type: object
+      properties:
+        internal_id:
+          type: string
+          nullable: true
+          description: Internal company job identifier
+        title:
+          type: string
+          description: Job title
+        company:
+          type: string
+          description: Company name
+        location:
+          type: string
+          nullable: true
+          description: Job location
+        description:
+          type: string
+          nullable: true
+          description: Job description
+        external_link:
+          type: string
+          nullable: true
+          description: External job posting URL
+        source:
+          type: string
+          nullable: true
+          description: Source of the job posting
+        scraped_at:
+          type: string
+          format: date-time
+          description: When the job was scraped
+      required:
+        - title
+        - company
+
+    Application:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the application
+          example: "987654321"
+        user_id:
+          type: string
+          format: uuid
+          description: User identifier
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        job_id:
+          type: string
+          description: Job identifier
+          example: "123456789"
+        status:
+          $ref: '#/components/schemas/ApplicationStatus'
+        notes:
+          type: string
+          nullable: true
+          description: Application notes
+        meta:
+          type: object
+          nullable: true
+          description: Additional metadata
+        created_at:
+          type: string
+          format: date-time
+          description: When the application was created
+          example: "2024-01-15T10:30:00.000Z"
+        updated_at:
+          type: string
+          format: date-time
+          description: When the application was last updated
+          example: "2024-01-15T10:30:00.000Z"
+      required:
+        - id
+        - user_id
+        - job_id
+        - status
+        - created_at
+        - updated_at
+
+    ApplicationWithJob:
+      allOf:
+        - $ref: '#/components/schemas/Application'
+        - type: object
+          properties:
+            company:
+              type: string
+              nullable: true
+              description: Company name from associated job
+            title:
+              type: string
+              nullable: true
+              description: Job title from associated job
+            location:
+              type: string
+              nullable: true
+              description: Job location from associated job
+            external_link:
+              type: string
+              nullable: true
+              description: External job posting URL from associated job
+
+    ApplicationCreate:
+      type: object
+      required:
+        - job_id
+        - user_id
+      properties:
+        job_id:
+          type: integer
+          description: Job identifier
+          minimum: 1
+        user_id:
+          type: string
+          format: uuid
+          description: User identifier
+        status:
+          $ref: '#/components/schemas/ApplicationStatus'
+
+    ApplicationUpdate:
+      type: object
+      properties:
+        status:
+          $ref: '#/components/schemas/ApplicationStatus'
+        notes:
+          type: string
+          description: Application notes
+
+    Question:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the question
+          example: "456789123"
+        user_id:
+          type: string
+          format: uuid
+          description: User identifier
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        job_id:
+          type: string
+          description: Job identifier
+          example: "123456789"
+        application_id:
+          type: string
+          nullable: true
+          description: Associated application identifier
+          example: "987654321"
+        field_label:
+          type: string
+          description: Human-readable label for the question
+          example: "Preferred location?"
+        help_text:
+          type: string
+          nullable: true
+          description: Help text for the question
+          example: "Select one"
+        kb_key:
+          type: string
+          nullable: true
+          description: Knowledge base key for storing the answer
+          example: "preferred_location"
+        answer:
+          type: string
+          nullable: true
+          description: User's answer to the question
+        status:
+          $ref: '#/components/schemas/QuestionStatus'
+        created_at:
+          type: string
+          format: date-time
+          description: When the question was created
+          example: "2024-01-15T10:30:00.000Z"
+        updated_at:
+          type: string
+          format: date-time
+          description: When the question was last updated
+          example: "2024-01-15T10:30:00.000Z"
+      required:
+        - id
+        - user_id
+        - job_id
+        - field_label
+        - status
+        - created_at
+        - updated_at
+
+    QuestionWithJob:
+      allOf:
+        - $ref: '#/components/schemas/Question'
+        - type: object
+          properties:
+            company:
+              type: string
+              nullable: true
+              description: Company name from associated job
+            title:
+              type: string
+              nullable: true
+              description: Job title from associated job
+            location:
+              type: string
+              nullable: true
+              description: Job location from associated job
+            external_link:
+              type: string
+              nullable: true
+              description: External job posting URL from associated job
+
+    QuestionCreate:
+      type: object
+      required:
+        - job_id
+        - field_label
+        - kb_key
+        - status
+      properties:
+        job_id:
+          type: integer
+          description: Job identifier
+          minimum: 1
+        application_id:
+          type: integer
+          nullable: true
+          description: Associated application identifier
+          minimum: 1
+        field_label:
+          type: string
+          description: Human-readable label for the question
+        help_text:
+          type: string
+          nullable: true
+          description: Help text for the question
+        kb_key:
+          type: string
+          description: Knowledge base key for storing the answer
+        status:
+          $ref: '#/components/schemas/QuestionStatus'
+
+    AgentRun:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the agent run
+          example: "789123456"
+        agent:
+          $ref: '#/components/schemas/AgentType'
+        started_at:
+          type: string
+          format: date-time
+          description: When the agent run started
+          example: "2024-01-15T10:30:00.000Z"
+        finished_at:
+          type: string
+          format: date-time
+          nullable: true
+          description: When the agent run finished
+          example: "2024-01-15T10:35:00.000Z"
+        summary:
+          type: string
+          nullable: true
+          description: Summary of the agent run
+          example: "Found 5 jobs; 5 unique after dedupe"
+        raw:
+          type: object
+          nullable: true
+          description: Raw data from the agent run
+        created_at:
+          type: string
+          format: date-time
+          description: When the agent run record was created
+          example: "2024-01-15T10:30:00.000Z"
+      required:
+        - id
+        - agent
+        - started_at
+        - created_at
+
+    ApplicationStatus:
+      type: string
+      enum:
+        - APPLIED
+        - PARTIAL_FILLED
+        - LOGIN_REQUIRED
+        - IN_PROGRESS
+        - FAILED
+        - SKIPPED
+      description: Status of a job application
+      example: "IN_PROGRESS"
+
+    QuestionStatus:
+      type: string
+      enum:
+        - OPEN
+        - ANSWERED
+        - INVALID
+      description: Status of a question
+      example: "OPEN"
+
+    AgentType:
+      type: string
+      enum:
+        - researcher
+        - applier
+      description: Type of automated agent
+      example: "researcher"
+
+    EventType:
+      type: string
+      enum:
+        - APPLICATION_CREATED
+        - APPLICATION_STATUS_CHANGED
+        - QUESTION_CREATED
+        - QUESTION_ANSWERED
+        - AGENT_RUN_STARTED
+        - AGENT_RUN_FINISHED
+        - JOB_IMPORTED
+      description: Type of system event
+
+    ErrorResponse:
+      type: object
+      properties:
+        ok:
+          type: boolean
+          example: false
+        error:
+          type: string
+          description: Error message
+          example: "Invalid request parameters"
+        stack:
+          type: string
+          nullable: true
+          description: Stack trace (only in development)
+      required:
+        - ok
+        - error
+
+tags:
+  - name: Health
+    description: Health check endpoints
+  - name: Jobs
+    description: Job management endpoints
+  - name: Applications
+    description: Job application management endpoints
+  - name: Questions
+    description: Question handling endpoints
+  - name: Agents
+    description: Automated agent execution endpoints
+
+externalDocs:
+  description: Find more info about Job Agents
+  url: https://github.com/your-org/job-agents

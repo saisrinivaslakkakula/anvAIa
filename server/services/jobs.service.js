@@ -124,4 +124,45 @@ export class JobsService {
       throw error;
     }
   }
+
+  static async createJob(jobData) {
+    const { title, company, location, description, external_link, internal_id, source, tags } = jobData || {};
+    
+    // Validate required fields
+    if (!title || !company) {
+      throw new Error('Missing required fields: title and company are required');
+    }
+
+    try {
+      const result = await prisma.jobs.create({
+        data: {
+          title: title.trim(),
+          company: company.trim(),
+          location: location?.trim() || null,
+          description: description?.trim() || null,
+          external_link: external_link?.trim() || null,
+          internal_id: internal_id?.trim() || null,
+          source: source?.trim() || null,
+          tags: Array.isArray(tags) ? tags : [],
+          scraped_at: new Date(),
+          created_at: new Date(),
+          updated_at: new Date()
+        }
+      });
+
+      return convertBigInts(result);
+    } catch (error) {
+      if (error.code === 'P2002') {
+        // Unique constraint violation
+        if (error.meta?.target?.includes('external_link')) {
+          throw new Error('A job with this external link already exists');
+        }
+        if (error.meta?.target?.includes('internal_id')) {
+          throw new Error('A job with this internal ID already exists');
+        }
+        throw new Error('Job already exists with conflicting unique fields');
+      }
+      throw error;
+    }
+  }
 }
