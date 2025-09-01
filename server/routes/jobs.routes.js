@@ -42,4 +42,44 @@ router.post('/', async (req, res) => {
   }
 });
 
+// dummy test endpoint to check if POST requests are working
+router.post('/test', async (req, res) => {
+  console.log('Dummy test endpoint hit!');
+  console.log('Request body:', req.body);
+  console.log('Request headers:', req.headers);
+  console.log('Request method:', req.method);
+  console.log('Request URL:', req.url);
+  
+  res.status(200).json({
+    ok: true,
+    message: 'Dummy test endpoint working!',
+    timestamp: new Date().toISOString(),
+    receivedData: req.body,
+    headers: req.headers,
+    method: req.method,
+    url: req.url
+  });
+});
+
+// another dummy endpoint with different path
+router.post('/dummy', async (req, res) => {
+  res.status(200).json({
+    ok: true,
+    message: 'Dummy endpoint working!',
+    timestamp: new Date().toISOString(),
+    echo: req.body
+  });
+});
+
+// GET test endpoint to compare with POST
+router.get('/test', async (req, res) => {
+  res.status(200).json({
+    ok: true,
+    message: 'GET test endpoint working!',
+    timestamp: new Date().toISOString(),
+    method: 'GET',
+    url: req.url
+  });
+});
+
 export default router;
